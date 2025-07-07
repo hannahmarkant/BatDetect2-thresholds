@@ -51,22 +51,22 @@ filter_small_files <- function(data, size_threshold) {
 
 size_threshold <- 59.00  # Minimum size of 59 KB
 
-# Create filtered dataset
+# Creating filtered dataset
 filtered_wav_file_data <- filter_small_files(wav_file_data, size_threshold)
 
-# Define output folder
+# Defining output folder
 output_folder <- directory  # Saves CSV file in the same directory
 
-# Create output folder if it doesn't exist
+# Creating output folder if it doesn't exist
 if (!dir.exists(output_folder)) dir.create(output_folder)
 
-# Define output file path
+# Defining output file path
 output_file <- file.path(output_folder, "filtered_wav_file_data.csv")
 
-# Save filtered data as CSV
+# Saving filtered data as CSV
 fwrite(filtered_wav_file_data, output_file, sep = ";", dec = ".")
 
-# Load CSV file with the all filtered .wav files
+# Loading CSV file with the all filtered .wav files
 data <- read_delim("./", delim = ";", escape_double = FALSE, trim_ws = TRUE)
 
 # Defining the root destination folder (in order to sort the files per folder name,
@@ -78,14 +78,14 @@ for (i in 1:nrow(data)) {
   # Get the source file path
   source_path <- file.path(data$FileDirectory[i], data$FileName[i])
   
-  # Define destination folder and file path
+  # Defining destination folder and file path
   destination_folder <- file.path(destination_root, data$FolderName[i])
   destination_path <- file.path(destination_folder, data$FileName[i])
   
-  # Create destination folder if it doesn't exist
+  # Creating destination folder if it doesn't exist
   dir.create(destination_folder, showWarnings = FALSE, recursive = TRUE)
   
-  # Copy file if it exists
+  # Copying file if it exists
   if (file.exists(source_path)) {
     file.copy(source_path, destination_path, overwrite = FALSE)
   } else {
