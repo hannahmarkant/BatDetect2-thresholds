@@ -1,10 +1,9 @@
-#############################################################################################
-# This script extracts metadata from all `.wav` audio files in a given directory and saves 
-# the information (file name, folder name, file size, etc.) in an CSV file. 
-# Furthermore, it filters the audio files to a minimum size of 59 KB. Audio files that are larger
-# contain high-frequency sound events. The other files are empty. The script copies the 
-# high frequencey .wav files based on paths listed in an CSV file to a new destination folder.
-#############################################################################################
+####################################################################################################################################
+# This script extracts metadata from all `.wav` audio files in a given directory and saves the information (file name, folder name, 
+# file size, etc.) in an CSV file. Furthermore, it filters the audio files to a minimum size of 59 KB. Audio files that are larger
+# contain high-frequency sound events. The other files are empty. The script copies the high frequencey .wav files based on paths 
+# listed in an CSV file to a new destination folder.
+####################################################################################################################################
 
 library(readr)
 library(data.table)
