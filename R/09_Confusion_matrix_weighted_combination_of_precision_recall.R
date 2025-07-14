@@ -8,12 +8,12 @@ library(caret)
 library(readxl)
 library(dplyr)      
 
-# "confidence_index" (Batdetect2 class confidence score) and "Validation" (0 = no bat, 1 = bat)
+# "confidence_index" (Batdetect2 class confidence score) and "success" (0 = no bat, 1 = bat)
 setwd("~/Uni_Greifswald/Masterarbeit")  # working directory
 
 data2 <- read_excel("sortiert_Human_validation_speciesspecificthreshold.xlsx")
 
-# "det_prob"  only two decimal places
+# "confidence_index"  only two decimal places
 data2$confidence_index <- trunc(data2$confidence_index * 100) / 100
 
 # List of thresholds from 0-0.73 (to avoid NAs), in 0.01 steps
@@ -65,7 +65,7 @@ best_threshold_row <- precision_recall_myotis %>%
 print(best_threshold_row)
 
 #### Nyctaloid group
-# "confidence_index" and "Validation" (0 = no bat, 1 = bat)
+# "confidence_index" and "success" (0 = no bat, 1 = bat)
 setwd("~/Uni_Greifswald/Masterarbeit")  
 
 data2 <- read_excel("sortiert_Human_validation_speciesspecificthreshold.xlsx")
@@ -119,7 +119,7 @@ best_threshold_row <- precision_recall_nyctaloid %>%
 print(best_threshold_row)
 
 #### Pipistrellus_species
-# "confidence_index" and "validation" (0 = no bat, 1 = bat)
+# "confidence_index" and "success" (0 = no bat, 1 = bat)
 setwd("~/Uni_Greifswald/Masterarbeit")  # Your work directory
 
 data2 <- read_excel("sortiert_Human_validation_speciesspecificthreshold.xlsx")
