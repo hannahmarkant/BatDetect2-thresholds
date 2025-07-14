@@ -44,8 +44,6 @@ mybats <- sort(c(mybats$simp_species))
 datacheck <- data1 %>%
   filter(simp_species %in% mybats)
 
-
-
 # If no need to check for dependancy of errors to environment please disable the lines 62 to 71
 # Vector creation to store the models intercept (Int) and Estimate, the confidence score thresholds for each 
 # false positive tolerance tested (ER 50%, 40%, 30%, 20% and 10%),the false negative rates (FN) and
