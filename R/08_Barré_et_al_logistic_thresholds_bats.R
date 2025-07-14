@@ -8,7 +8,7 @@
 # environnemental context of the recording stations.
 #############################################################################################
 # By Kévin Barré, Julie Pauwels and Yves Bas
-# Modified by David Singer, Jonas Hagge, JohannesKamp, HermannHondong and AndreasSchuldt
+# Modified by David Singer, Jonas Hagge, Johannes Kamp, Hermann Hondong and Andreas Schuldt
 #############################################################################################
 
 library(dplyr)
