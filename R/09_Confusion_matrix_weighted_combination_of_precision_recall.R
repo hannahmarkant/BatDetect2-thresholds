@@ -16,7 +16,6 @@ data2 <- read_excel("sortiert_Human_validation_speciesspecificthreshold.xlsx")
 # "det_prob"  only two decimal places
 data2$confidence_index <- trunc(data2$confidence_index * 100) / 100
 
-
 # List of thresholds from 0-0.73 (to avoid NAs), in 0.01 steps
 thresholds <- seq(0.00, 0.73, by = 0.01)
 
@@ -27,7 +26,6 @@ recall_values <- numeric()
 # Filter for Myotis_species
 data_myotis <- data2 %>%
   filter(simp_species == "Myotis_species")
-
 
 # Computing precision and recall for each threshold
 for (t in thresholds) {
@@ -64,11 +62,10 @@ View(precision_recall_myotis)
 # Finding threshold with highest performance score
 best_threshold_row <- precision_recall_myotis %>%
   filter(Performance == max(Performance, na.rm = TRUE))
-
 print(best_threshold_row)
 
 #### Nyctaloid group
-# "class_prob" and "Validation" (0 = no bat, 1 = bat)
+# "confidence_index" and "Validation" (0 = no bat, 1 = bat)
 setwd("~/Uni_Greifswald/Masterarbeit")  
 
 data2 <- read_excel("sortiert_Human_validation_speciesspecificthreshold.xlsx")
@@ -100,14 +97,13 @@ for (t in thresholds) {
   recall_values <- c(recall_values, cm$byClass["Recall"])
 }
 
-# Results dataframe
+# Results data frame
 precision_recall_nyctaloid <- data.frame(
   Group = "Nyctaloid_group",
   Threshold = thresholds,
   Precision = round(precision_values, 4),
   Recall = round(recall_values, 4)
 )
-
 print(precision_recall_nyctaloid)
 
 # Computing performance
@@ -115,13 +111,11 @@ w <- 0.75
 
 precision_recall_nyctaloid <- precision_recall_nyctaloid %>%
   mutate(Performance = round(Precision * w + Recall * (1 - w), 4))
-
 View(precision_recall_nyctaloid)
 
 # Best threshold
 best_threshold_row <- precision_recall_nyctaloid %>%
   filter(Performance == max(Performance, na.rm = TRUE))
-
 print(best_threshold_row)
 
 #### Pipistrellus_species
@@ -161,7 +155,6 @@ precision_recall_pipistrellus <- data.frame(
   Precision = round(precision_values, 4),
   Recall = round(recall_values, 4)
 )
-
 print(precision_recall_pipistrellus)
 
 # Computing performance
@@ -169,12 +162,10 @@ w <- 0.75
 
 precision_recall_pipistrellus <- precision_recall_pipistrellus %>%
   mutate(Performance = round(Precision * w + Recall * (1 - w), 4))
-
 View(precision_recall_pipistrellus)
 
 # Finding best threshold
 best_threshold_row <- precision_recall_pipistrellus %>%
   filter(Performance == max(Performance, na.rm = TRUE))
-
 print(best_threshold_row)
 
