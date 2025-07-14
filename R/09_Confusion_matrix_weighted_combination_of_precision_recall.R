@@ -1,12 +1,9 @@
-##########################################################################################
-# This script evaluated species-specific thresholds of confidence values from BatDetect2 for different bat species groups.
-# For confidence score thresholds in 0.01 increments it computes precision, recall and a weighted
-# performance score. A weighted combination of precision (p) and recall (r) 
-# (performance = (p *w + r *(1- w))) was calculated (Singer et al., 2024). However, precision was weighted 
-# higher than recall with a weight (w) of 0.75. The optimal threshold is chosen based 
-# on the maximum performance. Three species groups were analyzed: Myotis species, 
-# Nyctaloid group and Pipistrellus species.
-##########################################################################################
+###############################################################################################################################################################
+# This script evaluated species-specific thresholds of confidence values from BatDetect2 for different bat species groups. For confidence score thresholds in 
+# 0.01 increments it computes precision, recall and a weighted  performance score. A weighted combination of precision (p) and recall (r) 
+# (performance = (p *w + r *(1- w))) was calculated (Singer et al., 2024). However, precision was weighted higher than recall with a weight (w) of 0.75. 
+# The optimal threshold is chosen based on the maximum performance. Three species groups were analyzed: Myotis species, Nyctaloid group and Pipistrellus species.
+###############################################################################################################################################################
 library(caret)
 library(readxl)
 library(dplyr)      
