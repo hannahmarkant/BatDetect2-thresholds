@@ -22,8 +22,8 @@ library(lubridate)
 
 
 # loading data
-setwd("C:/Users/Willkommen/Documents")
-audio_data_2024_filtered <- read_csv("~/Uni_Greifswald/Masterarbeit/audio_data_2024_filtered.csv")
+setwd("./")
+audio_data_2024_filtered <- read_csv("~/audio_data_2024_filtered.csv")
 head (audio_data_2024_filtered)
 
 # filtering species which have too small amount of counts (2 counts)
@@ -90,15 +90,6 @@ ano_lu <- anosim(comm, pivot_tab2$site_id, distance="bray", permutations=9999)
 print(ano_lu)
 ano_lu <- anosim(comm, pivot_tab2$month, distance="bray", permutations=9999)
 print(ano_lu)
-
-
-# Bat community are very similar when comparing the two land use types
-# R=0.063-> very low (values can range from -1 to +1, 0= no difference, 1 = big difference)
-
-# Indicator Species Analysis
-indi <- indval(comm, clustering = pivot_tab$landuse)
-summary(indi, p=0.05)
-# no significant indicator species (landuse)
 
 # adding weather data
 weather_night_2024 <- read_excel("Uni_Greifswald/Masterarbeit/weather_night_2024.xlsx")
@@ -167,29 +158,23 @@ for(i in seq_along(cor_results$Variable)){
   cor_results$NMDS2_p[i] <- test2$p.value
 }
 
-# Rundung auf 4 Dezimalstellen
+# Round to 4 decimal places
 cor_results[, 2:5] <- round(cor_results[, 2:5], 4)
 print(cor_results)
 
-# NMDS1 is strongly negatively correlated with rain fall
-# NMDS2 is strongly negatively correlated with temperature mean and month
-# treatment has no effect
-
-# Monat in Faktor mit Labels umwandeln
+# Month as factor with labels
 nmds.sites$month <- factor(nmds.sites$month, 
                            levels = c(3, 4, 5, 6,7,8,9,10), 
                            labels = c("March", "April", "May", "June", "July", "August", "September", "October"))
 
-
-
-
+# defining the shapes for each month
 shape_values <- c(
-  "March" = 0,  # offenes Quadrat (wie in scale_shape_manual)
-  "April" = 1,  # offener Kreis
-  "May" = 2,    # offenes Dreieck
-  "June" = 3,   # offenes Plus
-  "July" = 4,   # offenes Kreuz
-  "August" = 5, # offener Diamant
+  "March" = 0,  
+  "April" = 1,  
+  "May" = 2,    
+  "June" = 3,   
+  "July" = 4,   
+  "August" = 5, 
   "September" = 6,
   "October" = 7
 )
@@ -253,9 +238,6 @@ NMDS_plot_combined <- ggplot(nmds.sites, aes(NMDS1, NMDS2)) +
   )
 
 print(NMDS_plot_combined)
-
-
-
 
 # FINAL: Combined NMDS plot with envfit and centroids 
 NMDS_plot_combined <- ggplot(nmds.sites, aes(NMDS1, NMDS2)) +
