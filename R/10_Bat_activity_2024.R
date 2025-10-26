@@ -178,7 +178,7 @@ weather_night_monthly <- weather_filled %>%
     Mean_night_temperature = mean(Temperature_final, na.rm = TRUE)
   )
 
-#write_xlsx(weather_night_filtered, "~/Uni_Greifswald/Masterarbeit/weather_night_2024.xlsx")
+# write_xlsx(weather_night_filtered, "~/weather_night_2024.xlsx")
 
 # Plotting precipiation
 ggplot(weather_night_filtered, aes(x = date, y = Rain_fall_night)) +
@@ -306,7 +306,6 @@ bat_activity_filtered %>%
     max = max(Activity_Minutes, na.rm = TRUE)
   )
 
-
 # Reference level- "Intensively used grassland + drained peatland" for illustrations
 bat_activity_filtered$landuse <- factor(
   bat_activity_filtered$landuse,
@@ -377,9 +376,9 @@ bat_summary_aggregated <- bat_activity_filtered %>%
     values_fill = NA # fill missing combinations with NA
   ) 
 
-#Standardizing the number of bat activity minutes (2 vs 3 recorders in the different types of land use)
-#write_xlsx(bat_activity_filtered, path = "~/Uni_Greifswald/Masterarbeit/bat_activity_filtered_2024.xlsx")
+# write_xlsx(bat_activity_filtered, path = "~/bat_activity_filtered_2024.xlsx")
 
+# Standardizing the number of bat activity minutes (2 vs 3 recorders in the different types of land use)
 bat_activity_filtered_2 <- bat_activity_filtered %>%
   group_by(Date, landuse) %>%
   summarise(
@@ -541,6 +540,3 @@ combined_plot <- y_label + wrap_plots(plots, ncol = 1) +
   plot_layout(widths = c(0.05, 0.95))
 
 combined_plot
-
-
-
