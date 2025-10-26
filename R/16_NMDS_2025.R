@@ -20,13 +20,12 @@ library(indicspecies)
 library(grid)
 library(lubridate)
 
-
-
 # loading data
+setwd("./")
 audio_data_2025_filtered <- read_csv("~/Uni_Greifswald/Masterarbeit/audio_data_2025_filtered.csv")
 head(audio_data_2025_filtered)
 
-# filtering sites which are not going to be included
+# filtering recorders (IG-D23 and IG-D25) which are not going to be included
 audio_data_2025_filtered <- audio_data_2025_filtered %>%
   filter(!site_abbr %in% c("IG-D23", "IG-D25"))
 
@@ -92,22 +91,8 @@ print(ano_lu)
 ano_lu <- anosim(comm, pivot_tab2$month, distance="bray", permutations=9999)
 print(ano_lu)
 
-# land-use types differ in their species composition
-# differences are not random
-# an R-value is not very high, but the difference is robust and significant
-
-
-# indicator species analysis
-indi <- indval(comm, clustering = pivot_tab$landuse)
-summary(indi, p=0.05)
-unique(pivot_tab$landuse)
-# "Intensively used grassland + drained peatland"-> Pipistrellus_species
-# "PV on rewetted peatland"  -> Myotis_species
-# indicator_value: both moderately to strongly characteristic species – both highly significant
-
-
 # adding weather data
-weather_night_2025 <- read_excel("Uni_Greifswald/Masterarbeit/weather_night_2025.xlsx")
+weather_night_2025 <- read_excel("~/weather_night_2025.xlsx")
 head(weather_night_2025)
 
 weather_month <- weather_night_2025 %>%
@@ -118,7 +103,6 @@ weather_month <- weather_night_2025 %>%
     Rain_fall_month = mean(Rain_fall_night, na.rm = TRUE),
     Temperature_mean_month = mean(Temperature_mean_night, na.rm = TRUE)
   )
-
 
 nmds.sites$site_monthinfo <- rownames(nmds.sites)
 weather_month <- weather_month %>% rename(site_monthinfo = year_month)
@@ -174,29 +158,23 @@ for(i in seq_along(cor_results$Variable)){
   cor_results$NMDS2_p[i] <- test2$p.value
 }
 
-# Rundung auf 4 Dezimalstellen
+# Round to 4 decimal places
 cor_results[, 2:5] <- round(cor_results[, 2:5], 4)
 print(cor_results)
 
 
-# month: positive correlated and significant for NMDS1 and NMDS2
-# rainfall: both axis have no significant correlation, doesn't play a role for the community structure
-# temperature: both axis positively correlated , temperate has an influence on bat community structure
-# landuse is negatively correlated with NMDS1
-
-
-# Monat in Faktor mit Labels umwandeln
+# Month as factor with lables
 nmds.sites$month <- factor(nmds.sites$month, 
                            levels = c( 4, 5, 6,7), 
                            labels = c("April", "May", "June", "July"))
 
 shape_values <- c(
-  "March" = 0,  # offenes Quadrat (wie in scale_shape_manual)
-  "April" = 1,  # offener Kreis
-  "May" = 2,    # offenes Dreieck
-  "June" = 3,   # offenes Plus
-  "July" = 4,   # offenes Kreuz
-  "August" = 5, # offener Diamant
+  "March" = 0,  
+  "April" = 1,  
+  "May" = 2,    
+  "June" = 3,  
+  "July" = 4,   
+  "August" = 5, 
   "September" = 6,
   "October" = 7
 )
@@ -216,8 +194,6 @@ nmds.species$species_label <- case_when(
   nmds.species$species_group == "Nyctaloid group" ~ "'Nyctaloid group'",
   TRUE ~ paste0("'", nmds.species$species_group, "'")  # alles andere als normaler Text
 )
-
-
 
 NMDS_plot_combined <- ggplot(nmds.sites, aes(NMDS1, NMDS2)) +
   geom_point(aes(color = landuse, shape = month), size = 3) +
@@ -262,7 +238,6 @@ NMDS_plot_combined <- ggplot(nmds.sites, aes(NMDS1, NMDS2)) +
     axis.title = element_text(size = 11),   
     axis.text = element_text(size = 10)
   )
-
 print(NMDS_plot_combined)
 
 # FINAL: Combined NMDS plot with envfit and centroids 
@@ -301,7 +276,4 @@ NMDS_plot_combined <- ggplot(nmds.sites, aes(NMDS1, NMDS2)) +
     legend.text = element_text(size = 11, margin = margin(l = 6, r = 10)),
     axis.title = element_text(size = 11),   
     axis.text = element_text(size = 10))
-
 print(NMDS_plot_combined)
-
-
