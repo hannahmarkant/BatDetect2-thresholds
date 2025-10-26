@@ -16,7 +16,7 @@ library(ggtext)
 
 setwd("./")
 
-###2024
+# 2024
 audio_data_2024 <- read_delim("~/Batdetect2_Analyse_0.6/all_0.66_batdetect2_highest_det_prob_threshold.csv", 
                          delim = ";", escape_double = FALSE, trim_ws = TRUE)
 audio_data_2024$Date <- as.Date(audio_data_2024$Date, format = "%Y-%m-%d")
@@ -38,7 +38,7 @@ audio_data_2024 <- audio_data_2024 %>%
     TRUE ~ NA_character_
   ))
 
-#2025
+# 2025
 audio_data_2025 <- read_delim("~/Batdetect2_Analyse_0.6_2025/all_0.66_batdetect2_highest_det_prob_threshold_2025.csv", 
                          delim = ";", escape_double = FALSE, trim_ws = TRUE)
 audio_data_2025$Date <- as.Date(audio_data_2025$Date, format = "%Y-%m-%d")
@@ -386,3 +386,4 @@ distribution_2025_filtered <- audio_data_2025_filtered %>%
 print(distribution_2024)
 print(distribution_2025)
 print(distribution_2025_filtered)
+
