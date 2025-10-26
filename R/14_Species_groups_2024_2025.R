@@ -1,4 +1,10 @@
-####getting the audio files of the species groups without threshold
+#############################################################################################################
+# Applying species group–specific thresholds to the defined species groups and visualizing the results 
+# (recorded minutes of bat activity per night across different land-use types).
+# Furthermore, the audio files of species groups for which no threshold could be determined were saved 
+# in separate folders for human validation.
+#############################################################################################################
+
 library(data.table)
 library(dplyr)
 library(tuneR)
@@ -8,11 +14,10 @@ library(ggplot2)
 library(lubridate)
 library(ggtext)
 
+setwd("./")
 
-
-setwd("C:/Users/Willkommen/Documents")
 ###2024
-audio_data_2024 <- read_delim("~/Uni_Greifswald/Masterarbeit/Batdetect2_Analyse_0.6/all_0.66_batdetect2_highest_det_prob_threshold.csv", 
+audio_data_2024 <- read_delim("~/Batdetect2_Analyse_0.6/all_0.66_batdetect2_highest_det_prob_threshold.csv", 
                          delim = ";", escape_double = FALSE, trim_ws = TRUE)
 audio_data_2024$Date <- as.Date(audio_data_2024$Date, format = "%Y-%m-%d")
 # adding a "landuse" column
@@ -34,7 +39,7 @@ audio_data_2024 <- audio_data_2024 %>%
   ))
 
 #2025
-audio_data_2025 <- read_delim("~/Uni_Greifswald/Masterarbeit/Batdetect2_Analyse_0.6_2025/all_0.66_batdetect2_highest_det_prob_threshold_2025.csv", 
+audio_data_2025 <- read_delim("~/Batdetect2_Analyse_0.6_2025/all_0.66_batdetect2_highest_det_prob_threshold_2025.csv", 
                          delim = ";", escape_double = FALSE, trim_ws = TRUE)
 audio_data_2025$Date <- as.Date(audio_data_2025$Date, format = "%Y-%m-%d")
 audio_data_2025 <- audio_data_2025 %>%
@@ -73,8 +78,7 @@ audio_data_2025 <- audio_data_2025 %>%
     TRUE ~ NA_character_
   ))
 
-
-# Für 2024
+# 2024
 audio_data_2024 %>%
   group_by(class) %>%
   summarise(count = n()) %>%
@@ -92,13 +96,12 @@ audio_data_2024 <- audio_data_2024 %>%
     TRUE ~ "Other"
   ))
 
-# Prüfen, ob es Arten gibt, die nicht in den Gruppen definiert sind
+# Check for species that are not included in the defined species groups
 audio_data_2024 %>%
   filter(species_group == "Other") %>%
   distinct(class)
 
-
-# Für 2025
+# 2025
 audio_data_2025 %>%
   group_by(class) %>%
   summarise(count = n()) %>%
@@ -116,7 +119,7 @@ audio_data_2025 <- audio_data_2025 %>%
     TRUE ~ "Other"
   ))
 
-# Prüfen, ob es Arten gibt, die nicht in den Gruppen definiert sind
+# Check for species that are not included in the defined species groups
 audio_data_2025 %>%
   filter(species_group == "Other") %>%
   distinct(class)
@@ -133,31 +136,30 @@ audio_data_2025 %>%
   summarise(count = n()) %>%
   arrange(desc(count))
 
-#####Audio Dateien für 2025 für die manuelle Bestimmung 
-# 2. Filtern nur die beiden gewünschten Gruppen
+##################################################################
+# Saving audio files for human validation 
+# Filter species groups for which no threshold could be determined 
 subset_2025 <- audio_data_2025 %>%
   filter(species_group %in% c("Barbastellus_barbastellus", "Plecotus_species"))
 subset_2024 <- audio_data_2024  %>%
   filter(species_group %in% c("Barbastellus_barbastellus", "Plecotus_species", "Rhinolophus_hipposideros"))
 
-setwd("~/Uni_Greifswald/Masterarbeit")
+setwd("./")
 
-# danach speicherst du einfach:
+# safe xlsx files
 #write.xlsx(subset_2025, "subset_2025.xlsx")
 #write.xlsx(subset_2024, "subset_2024.xlsx")
 
-
-
-# 3. Zielordner definieren
+# destination folder
 destination_folder <- "C:/Users/Willkommen/Documents/Uni_Greifswald/Masterarbeit/Species_Files_2025"
 
-# Ordner für Gruppen erstellen, falls nicht vorhanden
+# folders for the species groups (if they do not exist)
 unique_groups <- unique(subset_2025$species_group)
 for (g in unique_groups) {
   dir.create(file.path(destination_folder, g), showWarnings = FALSE, recursive = TRUE)
 }
 
-# Audio-Dateien kopieren
+# Copy audio files
 for (i in 1:nrow(subset_2025)) {
   source_file <- subset_2025$WAV_Path[i]
   
@@ -175,14 +177,12 @@ for (i in 1:nrow(subset_2025)) {
   file.copy(source_file, dest_file, overwrite = TRUE)
   cat("Kopiert:", dest_file, "\n")
 }
+####################################################################################
 
-
-####thresholds
+# apply species-group specific thresholds (class_prob) to the detections
 audio_data_2024$class_prob <- as.numeric(gsub(",", ".", audio_data_2024$class_prob))
 audio_data_2025$class_prob <- as.numeric(gsub(",", ".", audio_data_2025$class_prob))
 
-
-# Funktion zum Filtern mit Thresholds
 apply_thresholds <- function(data) {
   data %>%
     filter(  # Filter mit individuellen Thresholds je nach species_group
@@ -192,12 +192,10 @@ apply_thresholds <- function(data) {
     )
 }
 
-# Gefilterte Datensätze mit gesetzten Thresholds
 audio_data_2024_filtered <- apply_thresholds(audio_data_2024)
 audio_data_2025_filtered <- apply_thresholds(audio_data_2025)
 
 #2024
-# boxplots species groups on x-axis
 minutes_per_night_2024 <- audio_data_2024_filtered %>%
   filter(landuse %in% c("PV on rewetted peatland", 
                         "Intensively used grassland + drained peatland", 
@@ -206,18 +204,14 @@ minutes_per_night_2024 <- audio_data_2024_filtered %>%
   group_by(Date, landuse, species_group) %>%
   summarise(minutes_count = n(), .groups = "drop")
 
-# Farben für Linien (Landnutzung)
+# different colors (for each land use)
 landuse_colors <- c(
   "PV on rewetted peatland" = "steelblue",
   "Intensively used grassland + drained peatland" = "tomato",
   "PV on mineral soil" = "darkgreen"
 )
 
-#"Myotis_species" = expression(italic(Myotis)~species),
-#"Nyctaloid_group" = "Nyctaloid group",
-#"Pipistrellus_species" = expression(italic(Pipistrellus)~species)
-
-# Boxplot mit farbigen Linien (kein Füll-Farbton)
+# Boxplot
 p_2024 <- ggplot(minutes_per_night_2024, aes(x = species_group, y = minutes_count, color = landuse)) +
   geom_boxplot(position = position_dodge(width = 0.8), fill = NA) +
   scale_color_manual(values = landuse_colors) +
@@ -242,7 +236,6 @@ p_2024 <- ggplot(minutes_per_night_2024, aes(x = species_group, y = minutes_coun
     axis.title.x = element_text(size = 11),
     axis.title.y = element_text(size = 11)
   )
-
 print(p_2024)
 
 
@@ -255,47 +248,9 @@ summary_stats <- minutes_per_night_2024 %>%
     n = n(),
     .groups = "drop"
   )
-
 print(summary_stats)
 
-# 2025 boxplot
-minutes_per_night_2025 <- audio_data_2025_filtered %>%
-  filter(landuse %in% c("PV on rewetted peatland", 
-                        "Intensively used grassland + drained peatland", 
-                        "PV on mineral soil"),
-         species_group != "Plecotus_species") %>%
-  group_by(Date, landuse, species_group) %>%
-  summarise(minutes_count = n(), .groups = "drop")
-
-# Farben für Linien (Landnutzung)
-landuse_colors <- c(
-  "PV on rewetted peatland" = "steelblue",
-  "Intensively used grassland + drained peatland" = "tomato",
-  "PV on mineral soil" = "darkgreen"
-)
-
-# Boxplot mit farbigen Linien (kein Füll-Farbton)
-ggplot(minutes_per_night_2025, aes(x = species_group, y = minutes_count, color = landuse)) +
-  geom_boxplot(position = position_dodge(width = 0.8), fill = NA) +
-  scale_color_manual(values = landuse_colors) +
-  scale_x_discrete(labels = c(
-    "Myotis_species" = "Myotis species",
-    "Nyctaloid_group" = "Nyctaloid group",
-    "Pipistrellus_species" = "Pipistrellus species"
-  ))+
-  labs(
-    x = "Species group",
-    y = "Recorded bat activity minutes per night",
-    color = "Land use"
-  ) +
-  theme_minimal() +
-  theme(
-    plot.title = element_text(hjust = 0.5)
-  )
-
-
-######ohne IG-D23 und IG-D25
-# Vorverarbeitung: Filterung & Gruppierung
+# 2025 (without IG-D23 and IG-D25)
 minutes_per_night_2025_filtered <- audio_data_2025_filtered %>%
   filter(
     landuse %in% c(
@@ -315,7 +270,7 @@ minutes_per_night_2025_filtered <- audio_data_2025_filtered %>%
     "PV on mineral soil"
   )))
 
-# Farben für Linien
+# define colors for different land use
 landuse_colors <- c(
   "Intensively used grassland + drained peatland" = "tomato",
   "PV on rewetted peatland" = "steelblue",
@@ -398,189 +353,36 @@ audio_data_2025_filtered <- audio_data_2025_filtered %>%
 #write.xlsx(audio_data_2025_filtered, "audio_data_2025_filtered.xlsx")
 
 
-# Anzahl der verbleibenden Klassen pro Jahr
+# Number of recorded minutes per species group
+# 2024
 audio_data_2024_filtered %>%
   group_by(species_group) %>%
   summarise(count = n())
 
-
-# Anzahl der verbleibenden Klassen pro Jahr
+# 2025
 audio_data_2025_filtered %>%
   group_by(species_group) %>%
   summarise(count = n())
 
-
-
-# Für 2024
+# 2024 distribution per species group and land use
 distribution_2024 <- audio_data_2024_filtered %>%
   group_by(landuse, species_group) %>%
   summarise(count = n(), .groups = "drop") %>%
   arrange(landuse, desc(count))
 
-# Für 2025
+# 2025 distribution per species group and land use (with IG-D23 and IG-D25)
 distribution_2025 <- audio_data_2025_filtered %>%
   group_by(landuse, species_group) %>%
   summarise(count = n(), .groups = "drop") %>%
   arrange(landuse, desc(count))
 
+# 2025 distribution per species group and land use (without IG-D23 and IG-D25)
 distribution_2025_filtered <- audio_data_2025_filtered %>%
-  filter(!site %in% c("g1", "g3")) %>%  # Entfernt die Kategorien g1 und g3 aus der Spalte site
+  filter(!site %in% c("g1", "g3")) %>%  # IG-D23 and IG-D25
   group_by(landuse, species_group) %>%
   summarise(count = n(), .groups = "drop") %>%
   arrange(landuse, desc(count))
 
-
 print(distribution_2024)
 print(distribution_2025)
 print(distribution_2025_filtered)
-
-# Balkendiagramm für 2024
-distribution_2024_filtered <- distribution_2024 %>%
-  filter(species_group != "Plecotus_species")
-
-# with the numbers on top of the bars 
-ggplot(distribution_2024, aes(x = landuse, y = count, fill = species_group)) +
-  geom_bar(stat = "identity", position = position_dodge(width = 0.9)) +
-  geom_text(aes(label = count),
-            position = position_dodge(width = 0.9),
-            vjust = -0.3, size = 3) +  
-  scale_fill_manual(values = c(
-    "Myotis_species" = "#FFA07A",      
-    "Nyctaloid_group" = "#ADD8E6",      
-    "Pipistrellus_species" = "#FFc911"  
-  )) +
-  labs(x = "Land use", y = "Recorded minutes of bat activity") +
-  theme_minimal()
-
-# no numbers on top of the graphs
-ggplot(distribution_2024, aes(x = landuse, y = count, fill = species_group)) +
-  geom_bar(stat = "identity", position = "dodge") +
-  scale_fill_manual(values = c(
-    "Myotis_species" = "#FFA07A",       
-    "Nyctaloid_group" = "#ADD8E6",    
-    "Pipistrellus_species" = "#FFc911" 
-  )) +
-  labs(x = "Land use", y = "Recorded minutes of bat activity") +
-  theme_minimal()
-
-activity_per_site_2024 <- audio_data_2024_filtered %>%
-  group_by(landuse, site_abbr, site, species_group) %>%
-  summarise(recorded_minutes = n(), .groups = "drop")
-
-# Balkendiagramm für 2025
-# no numbers on top of the graphs
-ggplot(distribution_2025, aes(x = landuse, y = count, fill = species_group)) +
-  geom_bar(stat = "identity", position = "dodge") +
-  scale_fill_manual(values = c(
-    "Myotis_species" = "#FFA07A",       
-    "Nyctaloid_group" = "#ADD8E6",      
-    "Pipistrellus_species" = "#FFc911" 
-  )) +
-  labs(x = "Land use", y = "Recorded minutes of bat activity") +
-  theme_minimal()
-
-# with the numbers on top of the bars 
-ggplot(distribution_2024, aes(x = landuse, y = count, fill = species_group)) +
-  geom_bar(stat = "identity", position = position_dodge(width = 0.9)) +
-  geom_text(aes(label = count),
-            position = position_dodge(width = 0.9),
-            vjust = -0.3, size = 3) +  
-  scale_fill_manual(values = c(
-    "Myotis_species" = "#FFA07A",       
-    "Nyctaloid_group" = "#ADD8E6",      
-    "Pipistrellus_species" = "#FFc911"  
-  )) +
-  labs(x = "Land use", y = "Recorded minutes of bat activity") +
-  theme_minimal()
-
-
-activity_per_site_2025 <- audio_data_2025 %>%
-  group_by(landuse, site_abbr, site, species_group) %>%
-  summarise(recorded_minutes = n(), .groups = "drop")
-
-# 2025 ohne g1 und g3
-ggplot(distribution_2025_filtered, aes(x = landuse, y = count, fill = species_group)) +
-  geom_bar(stat = "identity", position = "dodge") +
-  scale_fill_manual(values = c(
-    "Myotis_species" = "#FFA07A",       
-    "Nyctaloid_group" = "#ADD8E6",     
-    "Pipistrellus_species" = "#FFc911" 
-  )) +
-  labs(x = "Land use", y = "Recorded minutes of bat activity") +
-  theme_minimal()
-
-ggplot(distribution_2025_filtered, aes(x = landuse, y = count, fill = species_group)) +
-  geom_bar(stat = "identity", position = position_dodge(width = 0.9)) +
-  geom_text(aes(label = count),
-            position = position_dodge(width = 0.9),
-            vjust = -0.3, size = 3) +
-  scale_fill_manual(values = c(
-    "Myotis_species" = "#FFA07A",       
-    "Nyctaloid_group" = "#ADD8E6",     
-    "Pipistrellus_species" = "#FFc911" 
-  )) +
-  labs(x = "Land use", y = "Recorded minutes of bat activity") +
-  theme_minimal()
-
-
-# 2025 nur mit g1 und g3
-# Nur g1 und g3 aus 2025
-audio_data_2025_filtered_3 <- audio_data_2025_filtered %>%
-  filter(site %in% c("g1", "g3")) %>%
-  mutate(site_group = "Intensively used grassland")
-
-distribution_2025_3 <- audio_data_2025_filtered_3 %>%
-  group_by(site_group, species_group) %>%
-  summarise(count = n(), .groups = "drop") %>%
-  arrange(desc(count))
-
-ggplot(distribution_2025_3, aes(x = site_group, y = count, fill = species_group)) +
-  geom_bar(stat = "identity", position = "dodge") +
-  scale_fill_manual(values = c(
-    "Myotis_species" = "#FFA07A",       # hellrot
-    "Nyctaloid_group" = "#ADD8E6",      # hellblau
-    "Pipistrellus_species" = "#FFc911" # dunkelgelb
-  )) +
-  labs(x = "Land use", y = "Recorded minutes of bat activity") +
-  theme_minimal()
-
-
-
-# Gehölze sind für Pipistrellus-Arten sehr wichtig!
-# nutzen Bäume, Hecken, Sträucher oder Baumreihen vor allem als
-## Jagdbahn und Orientierungshilfen
-## Verstecke und Schutz während der Jagd
-## Ruhestätten oder Quartiere (z. B. in Baumhöhlen oder Rindenspalten)
-# Ohne Gehölzstrukturen fehlt ihnen oft die nötige Struktur, um effizient zu jagen und sich sicher zu bewegen.
-# Pipistrellus-Arten brauchen Gehölze als wichtige Lebensraum-Komponente — auch wenn sie nicht ausschließlich in dichten Wäldern vorkommen.
-# Standorte mit Gehölzen: dort vermutlich auch mehr Pipistrellus-Rufe zu erwarten als auf komplett offenen, baumfreien Flächen.
-
-
-library(ggplot2)
-library(ggtext)
-
-df <- data.frame(
-  x = c("Myotis", "Pipistrellus"),
-  y = c(5, 7)
-)
-
-ggplot(df, aes(x = x, y = y)) +
-  geom_col() +
-  scale_x_discrete(labels = c("Myotis" = "*Myotis* species", "Pipistrellus" = "*Pipistrellus* species")) +
-  theme_minimal() +
-  theme(axis.text.x = element_markdown(size = 12))
-
-library(ggplot2)
-library(ggtext)
-
-df <- data.frame(
-  x = c("Myotis", "Pipistrellus"),
-  y = c(5, 7)
-)
-
-ggplot(df, aes(x = x, y = y)) +
-  geom_col() +
-  scale_x_discrete(labels = c("Myotis" = "*Myotis* species", "Pipistrellus" = "*Pipistrellus* species")) +
-  theme_minimal() +
-  theme(axis.text.x = ggtext::element_markdown(size = 12))
-
