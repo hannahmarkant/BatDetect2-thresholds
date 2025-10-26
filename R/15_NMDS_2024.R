@@ -20,7 +20,6 @@ library(indicspecies)
 library(grid)
 library(lubridate)
 
-
 # loading data
 setwd("./")
 audio_data_2024_filtered <- read_csv("~/audio_data_2024_filtered.csv")
@@ -190,7 +189,6 @@ nmds.species <- nmds.species %>%
                                 "Nyctaloid_group" = "Nyctaloid group",
                                 "Myotis_species" = "Myotis species"))
 
-
 nmds.species$species_label <- case_when(
   nmds.species$species_group == "Pipistrellus species" ~ "italic('Pipistrellus')~species",
   nmds.species$species_group == "Myotis species" ~ "italic('Myotis')~species",
@@ -236,7 +234,6 @@ NMDS_plot_combined <- ggplot(nmds.sites, aes(NMDS1, NMDS2)) +
     axis.title = element_text(size = 11),   
     axis.text = element_text(size = 10)
   )
-
 print(NMDS_plot_combined)
 
 # FINAL: Combined NMDS plot with envfit and centroids 
@@ -270,5 +267,4 @@ NMDS_plot_combined <- ggplot(nmds.sites, aes(NMDS1, NMDS2)) +
     legend.text = element_text(size = 11, margin = margin(l = 6, r = 10)),
     axis.title = element_text(size = 11),   
     axis.text = element_text(size = 10))
-
 print(NMDS_plot_combined)
