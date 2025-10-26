@@ -1,11 +1,11 @@
-################################################################################
+########################################################################################
 # An analysis of bat activity recorded with AudioMoth devices in 2024 was performed.
 # The workflow includes identifying missing or incomplete recording days,
 # importing and aggregating bat activity data and integrating weather data (total 
 # night-time precipitation and mean night-time temperature). The data is visualized 
 # over time, per site and per land-use type. Generalized Linear Mixed Models (GLMM) 
 # were fitted with step wise removal of non-significant terms.
-#################################################################################
+#######################################################################################
 
 library(readxl)
 library(readr)
@@ -22,10 +22,10 @@ library(ggeffects)
 library(gt)
 
 # Setting the working directory
-setwd("C:/Users/Willkommen/Documents")
+setwd("./")
 
 # Loading 'missing' table from the trackingsheet
-missing <- read.xlsx("~/Uni_Greifswald/Masterarbeit/Meine_Analyse/AudioMoth_TrackingSheet.12.11.2024.xlsx",
+missing <- read.xlsx("~/AudioMoth_TrackingSheet.12.11.2024.xlsx",
                      sheet = "missing_data") %>%
   mutate(
     date_last = as.Date(as.numeric(date_last), origin = "1899-12-30"),
@@ -43,7 +43,7 @@ missing_data_2024 <- missing %>%
   unnest(Date) %>%
   dplyr::select(site, Date)
 
-# Adding 12.03.2024 and 05.11.2024 for each site (are incomplete day as they are the start and end date of the sampling period and are not fully recorded days)
+# Adding 12.03.2024 and 05.11.2024 for each site (are incomplete days as they are the start and end date of the sampling period and are not fully recorded days)
 extra_dates <- missing %>%
   dplyr::select(site) %>%
   distinct() %>%
@@ -56,7 +56,7 @@ missing_data_final_2024 <- bind_rows(missing_data_2024, extra_dates) %>%
   arrange(site, Date)
 
 # Loading the bat activity data
-audio_data <- read_delim("~/Uni_Greifswald/Masterarbeit/Batdetect2_Analyse_0.6/all_0.66_batdetect2_highest_det_prob_threshold.csv", 
+audio_data <- read_delim("~/all_0.66_batdetect2_highest_det_prob_threshold.csv", 
                          delim = ";", escape_double = FALSE, trim_ws = TRUE)
 audio_data$Date <- as.Date(audio_data$Date, format = "%Y-%m-%d")
 
@@ -108,15 +108,15 @@ record_days <- final_data %>%
   count(site, name = "days_total")
 
 # adding weather data
-Lottorf_Weather_2024 <- read_excel("Uni_Greifswald/Masterarbeit/Lottorf_Wetterdaten_März-November_2024.xlsx")
+Lottorf_Weather_2024 <- read_excel("~/Lottorf_Wetterdaten_März-November_2024.xlsx")
 
 # due to missing data in the weather data from the weather station in Lottorf, missing data is added from the DWD station in Schleswig
 # hourly temperature from the station in Schleswig
-data_OBS_DEU_PT1H_T2M_4466 <- read_csv("Uni_Greifswald/Masterarbeit/Deutscher Wetterdienst/data_OBS_DEU_PT1H_T2M_4466.csv")
+data_OBS_DEU_PT1H_T2M_4466 <- read_csv("~/Deutscher Wetterdienst/data_OBS_DEU_PT1H_T2M_4466.csv")
 head(data_OBS_DEU_PT1H_T2M_4466)
 
 # hourly precipitation from the station in Schleswig
-data_OBS_DEU_PT1H_RR_4466 <- read_csv("Uni_Greifswald/Masterarbeit/Deutscher Wetterdienst/data_OBS_DEU_PT1H_RR_4466.csv")
+data_OBS_DEU_PT1H_RR_4466 <- read_csv("~/Deutscher Wetterdienst/data_OBS_DEU_PT1H_RR_4466.csv")
 head(data_OBS_DEU_PT1H_RR_4466)
 Sys.setlocale("LC_TIME", "C")
 
@@ -273,7 +273,7 @@ bat_activity_filtered <- left_join(
   by = "site"
 )
 
-# Boxplot showing Bat activity minutes per AudioMoth recorder
+# Boxplot showing bat activity minutes per AudioMoth recorder
 ggplot(bat_activity_filtered, aes(x = site_abbr, y = Activity_Minutes, color = site_abbr)) +
   geom_boxplot() +
   scale_color_manual(values = c(
@@ -307,29 +307,13 @@ bat_activity_filtered %>%
   )
 
 
-# Reference level- "Intensively used grassland + drained peatland" for illustrationd
+# Reference level- "Intensively used grassland + drained peatland" for illustrations
 bat_activity_filtered$landuse <- factor(
   bat_activity_filtered$landuse,
   levels = c("Intensively used grassland + drained peatland", 
              setdiff(unique(bat_activity_filtered$landuse), 
                      "Intensively used grassland + drained peatland"))
 )
-
-# Boxplot showing Bat activity per day per Land use
-bat_activity_filtered$days_total <- as.numeric(bat_activity_filtered$days_total)
-ggplot(bat_activity_filtered, aes(x = landuse, y = Activity_Minutes, color = landuse)) +
-  geom_boxplot() +
-  scale_color_manual(values = c(
-    "PV on rewetted peatland" = "steelblue",
-    "Intensively used grassland + drained peatland" = "tomato"
-  )) +
-  xlab("Land use") +
-  ylab("Recorded bat activity minutes per night") +
-  theme_minimal() +
-  theme(
-    legend.position = "none"
-  )
-
 
 # Calculating the total number of recorded days and the number of recorded minutes (total)
 days_per_site <- bat_activity_filtered %>%
@@ -406,6 +390,7 @@ bat_activity_filtered_2 <- bat_activity_filtered %>%
   mutate(
     Activity_Minutes_standardized_landuse = total_activity / recorder_count
   )
+                
 # Time data
 # standardized per land use 
 ggplot(bat_activity_filtered_2, aes(x = Date, y = Activity_Minutes_standardized_landuse, colour = landuse)) + 
@@ -467,22 +452,7 @@ cor.test(bat_activity_filtered$julian_day_scaled, bat_activity_filtered$Temperat
 cor.test (bat_activity_filtered$julian_day_scaled, bat_activity_filtered$Rain_fall_night, method = "pearson")
 cor.test(bat_activity_filtered$Rain_fall_night, bat_activity_filtered$Temperature_mean_night, method = "pearson")
 
-# with julian day as fixed effect
-mod1 <- glmmTMB(Activity_Minutes ~ landuse + Rain_fall_night+ Temperature_mean_night +  
-                           julian_day_scaled + offset(log(days_total)) + (1 | site) + (1 | julian_day_factor),
-                data = bat_activity_filtered,
-                family = nbinom2(),
-                dispformula = ~1,
-                control = glmmTMBControl(optCtrl = list(iter.max=10000)))
-                
-
-summary(mod1)
-check_overdispersion(mod1)
-check_autocorrelation(mod1)
-check_residuals(mod1)
-check_model(mod1)
-
-# without julian day as fixed effect-> final???
+# without julian day as fixed effect
 mod1_2 <- glmmTMB(Activity_Minutes ~ landuse + Rain_fall_night+ Temperature_mean_night 
                 + offset(log(days_total)) + (1 | site)+ (1 | julian_day_factor),
                 data = bat_activity_filtered,
@@ -497,43 +467,8 @@ check_residuals(mod1_2)
 check_model(mod1_2)
 
 icc(mod1_2)
-# 0.132 (adjusted) → Random Effects erklären ~13 % der Variabilität
-#ranef(mod1_2)
-#library(sjPlot)
-#plot_model(mod1_2, type = "re")  # Visualisiert Random Effects
 
-
-mod_full<- glmmTMB(
-  Activity_Minutes ~ landuse + Rain_fall_night + Temperature_mean_night +  
-    offset(log(days_total)) +
-    (1 | site) +  (1 | julian_day_factor) ,
-  data = bat_activity_filtered,
-  family = nbinom2(),
-  dispformula = ~1,
-  control = glmmTMBControl(optCtrl = list(iter.max = 10000))
-)
-summary (mod_full)
-check_overdispersion(mod_full)
-check_autocorrelation(mod_full)
-check_residuals(mod_full)
-check_model(mod_full)
-
-mod_reduced<- glmmTMB(
-  Activity_Minutes ~ landuse + Rain_fall_night + Temperature_mean_night +  
-    offset(log(days_total)),
-  data = bat_activity_filtered,
-  family = nbinom2(),
-  dispformula = ~1,
-  control = glmmTMBControl(optCtrl = list(iter.max = 10000))
-)
-summary (mod_reduced)
-check_overdispersion(mod_reduced)
-check_autocorrelation(mod_reduced)
-check_residuals(mod_reduced)
-check_model(mod_reduced)
-anova(mod_full, mod_reduced)
-
-# Modell mit und ohne 'site'
+# with and without 'site' as a random effect
 mod_full <- glmmTMB(Activity_Minutes ~ landuse + Rain_fall_night + Temperature_mean_night + offset(log(days_total)) + (1 | site) + (1 | julian_day_factor),
                     data = bat_activity_filtered,
                     family = nbinom2())
@@ -542,26 +477,11 @@ mod_no_site <- update(mod_full, . ~ . - (1 | site))
 
 anova(mod_no_site, mod_full)
 
-# Analog für 'julian_day_factor':
+# with and without 'julian_day_factor' as a random effect
 mod_no_julian <- update(mod_full, . ~ . - (1 | julian_day_factor))
 
 anova(mod_no_julian, mod_full)
 
-
-#stepwise removal of non significant terms (no landuse)
-##das modell eher nicht notwendig da dann das rausgenommen was spannend ist 
-mod1_3<-glmmTMB(Activity_Minutes ~ Rain_fall_night+ Temperature_mean_night +  
-                  julian_day_scaled + offset(log(days_total)) + (1 | site) + (1 | julian_day_factor),
-                data = bat_activity_filtered,
-                family = nbinom2(),
-                dispformula = ~1,
-                control = glmmTMBControl(optCtrl = list(iter.max=10000)))
-
-summary(mod1_3)
-check_overdispersion(mod1_3)
-check_autocorrelation(mod1_3)
-check_residuals(mod1_3)
-check_model(mod1_3)
 
 ###########
 # 1. Temperature effect
@@ -621,3 +541,4 @@ combined_plot <- y_label + wrap_plots(plots, ncol = 1) +
   plot_layout(widths = c(0.05, 0.95))
 
 combined_plot
+
