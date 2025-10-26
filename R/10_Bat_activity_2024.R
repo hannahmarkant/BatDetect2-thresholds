@@ -33,7 +33,7 @@ missing <- read.xlsx("~/AudioMoth_TrackingSheet.12.11.2024.xlsx",
     date_first = as.Date(as.numeric(date_first), origin = "1899-12-30")
   )
 
-# Create a row for each day with missing recordings before collecting the recorders (collection_date)
+# Create a row for each day with missing recordings before collecting the recorders (data_collection_date)
 missing_data_2024 <- missing %>%
   rowwise() %>%
   mutate(
@@ -541,4 +541,5 @@ combined_plot <- y_label + wrap_plots(plots, ncol = 1) +
   plot_layout(widths = c(0.05, 0.95))
 
 combined_plot
+
 
