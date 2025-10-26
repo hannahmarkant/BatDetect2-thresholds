@@ -1,5 +1,7 @@
 #########################################################################################################
-#.....
+# An comparison of the 2024 and 2025 data during the same time period (24.04. - 18.07.) each year. The
+# bat activity was shown in a time series graph and the weather data is also shown in one graph (line:
+# temperature and bar: precipitation).
 #########################################################################################################
 
 library(lubridate)
@@ -11,7 +13,7 @@ library(readxl)
 
 Sys.setlocale("LC_TIME", "C")
 
-#Loading data
+# Loading data
 setwd("./")
 bat_activity_filtered_2024 <- read_excel("~/bat_activity_filtered_2024.xlsx")
 head(bat_activity_filtered_2024)
@@ -122,7 +124,7 @@ monthly_activity_mean <- bat_activity_daily_corrected %>%
   summarise(Total_Activity = mean(Activity_Minutes_standardized_landuse, na.rm = TRUE)) %>%
   ungroup()
 
-#Loading weather data
+# Loading weather data
 weather_night_2024 <- read_excel("Uni_Greifswald/Masterarbeit/weather_night_2024.xlsx")
 head(weather_night_2024)
 weather_night_2025 <- read_excel("Uni_Greifswald/Masterarbeit/weather_night_2025.xlsx")
@@ -182,6 +184,7 @@ bat_weather_filtered <- bat_weather_filtered %>%
     dummy_date = as.Date(julian_day - 1, origin = "2000-01-01")
   )
 
+# precipitation
 ggplot(bat_weather_filtered, aes(x = dummy_date, y = Rain_fall_night, fill = Year)) +
   geom_col(position = "dodge") +
   labs(
@@ -193,6 +196,7 @@ ggplot(bat_weather_filtered, aes(x = dummy_date, y = Rain_fall_night, fill = Yea
   scale_x_date(date_labels = "%b", date_breaks = "1 month") +
   theme_minimal()
 
+# temperature
 ggplot(bat_weather_filtered, aes(x = dummy_date, y = Temperature_mean_night, colour = Year)) +
   geom_line(alpha = 0.5) +
   geom_point(alpha = 0.6) +
@@ -239,5 +243,3 @@ ggplot(bat_weather_filtered, aes(x = dummy_date)) +
     legend.title = element_text(size = 11, face = "bold"),
     legend.text = element_text(size = 11, margin = margin(l = 5, r = 10))
   )
-
-
