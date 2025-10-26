@@ -1,11 +1,17 @@
+###################################################################################################################
+# The detected calls by BatDetect2 from the data sets (2024 and 2025) were visualized as histograms showing the 
+# number of calls per recorded minute. The recorders IG-D23 and IG-D25 were excluded from the 2025 dataset.
+####################################################################################################################
+
 library(dplyr)
 library(ggplot2)
 library(readr)
 
-batdetect2_2024 <- read_delim("Uni_Greifswald/Masterarbeit/Batdetect2_Analyse_0.6/all_0.6_batdetect2.csv", 
+# Loading the datasets of all detected calls by BatDetect2 (set threshold was 0.6) (2024 & 2025)
+batdetect2_2024 <- read_delim("~/Batdetect2_Analyse_0.6/all_0.6_batdetect2.csv", 
                                  delim = ";", escape_double = FALSE, trim_ws = TRUE)
 
-batdetect2_2025 <- read_delim("Uni_Greifswald/Masterarbeit/Batdetect2_Analyse_0.6_2025/all_0.6_batdetect2_2025.csv", 
+batdetect2_2025 <- read_delim("~/Batdetect2_Analyse_0.6_2025/all_0.6_batdetect2_2025.csv", 
                                       delim = ";", escape_double = FALSE, trim_ws = TRUE)
 
 batdetect2_2024 <- batdetect2_2024 %>% mutate(year = 2024)
@@ -16,7 +22,7 @@ batdetect_all <- bind_rows(batdetect2_2024, batdetect2_2025)
 batdetect_all <- batdetect_all %>%
   mutate(det_prob = as.numeric(gsub(",", ".", det_prob)))
 
-# det_prob >= 0.66 
+# Setting the threshold 0.66 (to exclude noise data) (det_prob >= 0.66)
 batdetect_filtered <- batdetect_all %>%
   filter(det_prob >= 0.66)
 
@@ -35,7 +41,6 @@ calls_per_recording <- calls_per_recording %>%
     site %in% c("091", "004", "102", "115", "wm2", "059") ~ "PV on mineral soil",
     TRUE ~ "Other"
   ))
-
 
 # Histogram: Distribution of calls per land use
 # 2024
@@ -64,7 +69,6 @@ ggplot(filter(calls_per_recording, year == 2024),
     axis.text.y = element_text(size = 10)
     
   )
-
 
 # 2025 without IG-D23 and IG-D25
 calls_per_recording$landuse <- factor(
@@ -102,16 +106,7 @@ ggplot(
         axis.text.x = element_text(size = 10),
         axis.text.y = element_text(size = 10) )
 
-
-table_for_plot_2025 <- calls_per_recording %>%
-  filter(year == 2025, !site %in% c("g1", "g3")) %>%
-  group_by(n_calls, landuse) %>%
-  summarise(
-    recorded_minutes = n(),   
-    .groups = "drop"
-  ) %>%
-  arrange(landuse, n_calls)
-
+# Summarized data (2024)
 table_for_plot_2024 <- calls_per_recording %>%
   filter(year == 2024) %>%
   group_by(n_calls, landuse) %>%
@@ -121,7 +116,17 @@ table_for_plot_2024 <- calls_per_recording %>%
   ) %>%
   arrange(landuse, n_calls)
 
+# Summarized data (2025)
+table_for_plot_2025 <- calls_per_recording %>%
+  filter(year == 2025, !site %in% c("g1", "g3")) %>%
+  group_by(n_calls, landuse) %>%
+  summarise(
+    recorded_minutes = n(),   
+    .groups = "drop"
+  ) %>%
+  arrange(landuse, n_calls)
 
+# Number of recordings that contained more than 60 calls
 recordings_over_60 <- calls_per_recording %>%
   filter(n_calls > 60, !(year == 2025 & site %in% c("g1", "g3"))) %>%
   group_by(year, landuse) %>%
@@ -130,9 +135,9 @@ recordings_over_60 <- calls_per_recording %>%
     .groups = "drop"
   ) %>%
   arrange(year, landuse)
-
 recordings_over_60
 
+# Number of total recorded minutes per year and land use
 recorded_minutes_summary <- calls_per_recording %>%
   filter(!(year == 2025 & site %in% c("g1", "g3"))) %>%
   group_by(year, landuse) %>%
@@ -141,5 +146,4 @@ recorded_minutes_summary <- calls_per_recording %>%
     .groups = "drop"
   ) %>%
   arrange(year, landuse)
-
 recorded_minutes_summary
