@@ -75,7 +75,6 @@ audio_data$Date <- as.Date(audio_data$Date, format = "%Y-%m-%d")
 audio_data <- audio_data %>%
   filter(Date >= as.Date("2025-04-24"))
 
-
 # Calculating the activity minutes per day (00:00-6:00 & 18:00-24:00)
 activity_per_day <- audio_data %>%
   group_by(site, Date) %>%
@@ -638,3 +637,4 @@ plots <- list(p_landuse,p_temp, p_rain)
 combined_plot <- y_label + wrap_plots(plots, ncol = 1) + 
   plot_layout(widths = c(0.05, 0.95))  
 combined_plot
+
