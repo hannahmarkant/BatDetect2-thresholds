@@ -1,3 +1,7 @@
+#########################################################################################################
+#.....
+#########################################################################################################
+
 library(lubridate)
 library(dplyr)
 library(ggplot2)
@@ -8,11 +12,11 @@ library(readxl)
 Sys.setlocale("LC_TIME", "C")
 
 #Loading data
-setwd("C:/Users/Willkommen/Documents")
-bat_activity_filtered_2024 <- read_excel("Uni_Greifswald/Masterarbeit/bat_activity_filtered_2024.xlsx")
+setwd("./")
+bat_activity_filtered_2024 <- read_excel("~/bat_activity_filtered_2024.xlsx")
 head(bat_activity_filtered_2024)
 
-bat_activity_filtered_2025 <- read_excel("Uni_Greifswald/Masterarbeit/bat_activity_filtered_2025.xlsx")
+bat_activity_filtered_2025 <- read_excel("~/bat_activity_filtered_2025.xlsx")
 head(bat_activity_filtered_2025)
 
 # 2025 Without IG_D1 & IG-D3
@@ -118,46 +122,6 @@ monthly_activity_mean <- bat_activity_daily_corrected %>%
   summarise(Total_Activity = mean(Activity_Minutes_standardized_landuse, na.rm = TRUE)) %>%
   ungroup()
 
-#with PV on mineral soil
-ggplot(bat_activity_daily_corrected, aes(x = dummy_date, y = Activity_Minutes_standardized_landuse, colour = landuse)) + 
-  geom_line(aes(group = interaction(landuse, Year), linetype = Year), alpha = 0.4) +
-  geom_point(aes(shape = Year),  alpha = 0.6) +
-  geom_smooth(aes(linetype = Year), method = "loess", se = TRUE) +
-  scale_color_manual(values = c(
-    "Intensively used grassland + drained peatland" = "tomato",
-    "PV on rewetted peatland" = "steelblue",
-    "PV on mineral soil" = "darkgreen"
-  )) +
-  scale_shape_manual(values = c("2024" = 16, "2025" = 17)) +
-  scale_linetype_manual(values = c("2024" = "solid", "2025" = "dashed")) +
-  scale_x_date(
-    date_labels = "%b",
-    breaks = seq(as.Date("2000-03-15"), as.Date("2000-11-15"), by = "1 month")
-  )+  # nur Monat als Label anzeigen
-  labs(
-    x = "Month", 
-    y = "Recorded bat activity minutes per night", 
-    colour = "Land use", 
-    shape = "Year", 
-    linetype = "Year"
-  ) +
-  guides(
-    shape = guide_legend(override.aes = list(colour = "grey", size= 2.5 ))
-  )+
-  theme_minimal() +
-  theme(plot.margin = margin(t = 10, r = 20, b = 10, l = 10),
-        legend.position = "top",
-          legend.direction = "horizontal",
-          legend.box = "wrap",     
-          legend.key.width = unit(1, "lines"),  
-          legend.spacing.x = unit(0.2, "lines"), 
-        legend.spacing.y = unit(0.1, "lines"),
-          legend.title = element_text(size = 9, face = "bold"),
-        legend.text = element_text(margin = margin(l = 5, r = 10)))
-
-subset_2024 <- subset(bat_activity_daily_corrected, Year == 2024)
-
-
 #Loading weather data
 weather_night_2024 <- read_excel("Uni_Greifswald/Masterarbeit/weather_night_2024.xlsx")
 head(weather_night_2024)
@@ -184,7 +148,7 @@ weather_night_2025 <- weather_night_2025[
     weather_night_2025$date <= end_date, 
 ]
 
-#Adding a column for the year
+# Adding a column for the year
 weather_night_2024 <- weather_night_2024 %>%
   mutate(Year = "2024")
 weather_night_2025 <- weather_night_2025 %>%
@@ -206,7 +170,7 @@ weather_night_monthly <- bat_weather_filtered %>%
     Mean_night_temperature = mean(Temperature_mean_night, na.rm = TRUE)
   )
 
-#Adding julian date
+# Adding julian date
 bat_weather_filtered <- bat_weather_filtered %>%
   mutate(
     julian_day = yday(date) 
@@ -275,4 +239,5 @@ ggplot(bat_weather_filtered, aes(x = dummy_date)) +
     legend.title = element_text(size = 11, face = "bold"),
     legend.text = element_text(size = 11, margin = margin(l = 5, r = 10))
   )
+
 
