@@ -27,10 +27,10 @@ library(DHARMa)
 library(writexl)
 
 # Setting the working directory
-setwd("C:/Users/Willkommen/Documents")
+setwd("./")
 
 # Loading 'missing' table form the trackingsheet
-missing_2025 <- read.xlsx("~/Uni_Greifswald/Masterarbeit/Meine_Analyse/Audio_Moth_Tracking_Sheet_Hannah_2025.xlsx", 
+missing_2025 <- read.xlsx("~/Audio_Moth_Tracking_Sheet_Hannah_2025.xlsx", 
                           sheet = "missing_data") %>%
   mutate(
     date_last = as.Date(as.numeric(date_last), origin = "1899-12-30"),
@@ -46,7 +46,7 @@ missing_2025 <- missing_2025 %>%
                         str_pad(as.character(site), width = 3, pad = "0"),
                         site))
 
-# Create a row for each day with missing recordings before collection
+# Create a row for each day with missing recordings before collectiing the recorders (data_collection_date)
 missing_data_2025 <- missing_2025 %>%
   rowwise() %>%
   mutate(
@@ -56,20 +56,20 @@ missing_data_2025 <- missing_2025 %>%
   unnest(Date) %>%
   dplyr::select(site, Date)
 
-# Adding 24.04.2025 and 18.07.2025 for each site (incomplete day as they are the start and end date of the sampling period)
+# Adding 24.04.2025 and 18.07.2025 for each site (incomplete days as they are the start and end date of the sampling period and are not fully recorded days)
 extra_dates <- missing_2025 %>%
   dplyr::select(site) %>%
   distinct() %>%
   mutate(Date = as.Date("2025-04-24")) %>%
   bind_rows(missing_2025 %>% dplyr::select(site) %>% distinct() %>% mutate(Date = as.Date("2025-07-18")))
 
-# Combining all dates and removing the duplicates
+# Combining all missing dates and removing the duplicates
 missing_data_final_2025 <- bind_rows(missing_data_2025, extra_dates) %>%
   distinct(site, Date) %>%
   arrange(site, Date)
 
 # Loading the bat activity data
-audio_data <- read_delim("~/Uni_Greifswald/Masterarbeit/Batdetect2_Analyse_0.6_2025/all_0.66_batdetect2_highest_det_prob_threshold_2025.csv", 
+audio_data <- read_delim("~/Batdetect2_Analyse_0.6_2025/all_0.66_batdetect2_highest_det_prob_threshold_2025.csv", 
                          delim = ";", escape_double = FALSE, trim_ws = TRUE)
 audio_data$Date <- as.Date(audio_data$Date, format = "%Y-%m-%d")
 audio_data <- audio_data %>%
@@ -89,7 +89,7 @@ recording_info <- missing_2025 %>%
   mutate(recording_status = ifelse(Date <= date_last, "Yes", "No")) %>%
   dplyr::select(site, Date, recording_status)
 
-#to avoid duplicates
+# avoid duplicates
 recording_info<- recording_info %>%
   distinct(site, Date, .keep_all = TRUE)
 
@@ -116,27 +116,26 @@ final_data <- final_data %>%
   dplyr::select(-missing_flag)
 
 
-# Calculate number of unique recording days per plot
+# Calculate number of unique recording days per recorder
 # Days with recording issues are excluded
 record_days <- final_data %>%
   anti_join(missing_data_final_2025, by = c("site", "Date")) %>%
   count(site, name = "days_total")
 
-
 # adding weather data
-Lottorf_Weather_2025 <- read_excel("Uni_Greifswald/Masterarbeit/Lottorf_Wetterdaten_April-Juli_2025.xlsx")
+Lottorf_Weather_2025 <- read_excel("~/Lottorf_Wetterdaten_April-Juli_2025.xlsx")
 
 # hourly temperature Schleswig
-data_OBS_DEU_PT1H_T2M_4466 <- read_csv("Uni_Greifswald/Masterarbeit/Deutscher Wetterdienst/data_OBS_DEU_PT1H_T2M_4466.csv")
+data_OBS_DEU_PT1H_T2M_4466 <- read_csv("~/Deutscher Wetterdienst/data_OBS_DEU_PT1H_T2M_4466.csv")
 head(data_OBS_DEU_PT1H_T2M_4466)
 
 #hourly precipitation Schleswig
-data_OBS_DEU_PT1H_RR_4466 <- read_csv("Uni_Greifswald/Masterarbeit/Deutscher Wetterdienst/data_OBS_DEU_PT1H_RR_4466.csv")
+data_OBS_DEU_PT1H_RR_4466 <- read_csv("~/Deutscher Wetterdienst/data_OBS_DEU_PT1H_RR_4466.csv")
 head(data_OBS_DEU_PT1H_RR_4466)
 Sys.setlocale("LC_TIME", "C")
 
-start_date <- as.Date("2025-04-24")
-end_date <- as.Date("2025-07-18")
+start_date <- as.Date("2025-04-24") # start of the recording period
+end_date <- as.Date("2025-07-18") # end of the recording period
 
 weather_night <- Lottorf_Weather_2025 %>%
   mutate(
@@ -169,10 +168,6 @@ weather_filled <- weather_night %>%
     `Rain fall_final` = if_else(is.na(`Rain fall`), Rain_station, `Rain fall`)
   )
 
-
-sum(is.na(weather_filled$`Rain fall_final`))     
-sum(is.na(weather_filled$Temperature_final))  
-
 weather_night_filtered <- weather_filled %>%
   mutate(date = as.Date(dateLocale)) %>%
   filter(hour(dateLocale) %in% c(0:5, 18:23)) %>%
@@ -182,6 +177,7 @@ weather_night_filtered <- weather_filled %>%
     Temperature_mean_night = mean(Temperature_final, na.rm = TRUE)
   )
 
+# Calculating monthly mean temperature and total precipitation
 weather_night_monthly_2025 <- weather_filled %>%
   mutate(
     date = as.Date(dateLocale),
@@ -195,9 +191,9 @@ weather_night_monthly_2025 <- weather_filled %>%
     Mean_night_temperature = mean(Temperature_final, na.rm = TRUE)
   )
 
+# write_xlsx(weather_night_filtered, "~/weather_night_2025.xlsx")
 
-#write_xlsx(weather_night_filtered, "~/Uni_Greifswald/Masterarbeit/weather_night_2025.xlsx")
-
+# Plotting precipitation                
 ggplot(weather_night_filtered, aes(x = date, y = Rain_fall_night)) +
   geom_col(fill = "blue") +
   labs(
@@ -208,7 +204,7 @@ ggplot(weather_night_filtered, aes(x = date, y = Rain_fall_night)) +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
-
+# Plotting temperature
 ggplot(weather_night_filtered, aes(x = date, y = Temperature_mean_night)) +
   geom_smooth(color = "#D55E00")+
   geom_line(color = "#D55E00") +
@@ -221,8 +217,7 @@ ggplot(weather_night_filtered, aes(x = date, y = Temperature_mean_night)) +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
-
-
+# Plotting temperature and precipitation
 ggplot(weather_night_filtered, aes(x = date)) +
   geom_col(aes(y = Rain_fall_night), fill = "steelblue") +
   geom_line(aes(y = Temperature_mean_night), color = "#D55E00") +
@@ -246,18 +241,6 @@ ggplot(weather_night_filtered, aes(x = date)) +
     axis.title.y = element_text(color = "steelblue", size = 11),   
     axis.title.y.right = element_text(color = "#D55E00", size = 11))
 
-monthly_mean_temp <- weather_night_filtered %>%
-  mutate(Month = month(date, label = TRUE)) %>% 
-  group_by(Month) %>%
-  summarise(Mean_Temperature = mean(Temperature_mean_night, na.rm = TRUE)) %>%
-  ungroup()
-
-monthly_total_prec <- weather_night_filtered %>%
-  mutate(Month = month(date, label = TRUE)) %>% 
-  group_by(Month) %>%
-  summarise(prec_Temperature = sum(Rain_fall_night, na.rm = TRUE)) %>%
-  ungroup()
-
 # Ensuring that both date columns have the same date format
 final_data$Date <- as.Date(final_data$Date)
 weather_night$date <- as.Date(weather_night$date, format = "%d/%m/%Y")
@@ -270,7 +253,7 @@ bat_activity_filtered <- bat_activity_weather %>%
 bat_activity_filtered$site <- as.factor(bat_activity_filtered$site)
 bat_activity_filtered$recording_status <- as.factor(bat_activity_filtered$recording_status)
 
-# adding a "landuse" column
+# adding a "landuse" column and renaming Recorder ID
 bat_activity_filtered <- bat_activity_filtered %>%
   mutate(landuse = case_when(
     site %in% c("g1","g3","g7","g11","099","095") ~ "Intensively used grassland + drained peatland",
@@ -305,14 +288,9 @@ bat_activity_filtered <- bat_activity_filtered %>%
 bat_activity_filtered <- bat_activity_filtered %>%
  filter(Date >= as.Date("2025-04-24"))
 
-# Land-use as a factor and setting the desired reference level
-bat_activity_filtered$landuse <- factor(
-  bat_activity_filtered$landuse,
-  levels = c("PV on rewetted peatland", "Intensively used grassland + drained peatland", "PV on mineral soil")
-)
-
 #Julian date
 bat_activity_filtered$julian_day <- as.numeric(format(bat_activity_filtered$Date, "%j"))
+
 # Scaling Julian Date for improved model convergence
 bat_activity_filtered$julian_day_scaled <- scale(bat_activity_filtered$julian_day)
 bat_activity_filtered$julian_day_factor <- as.factor(bat_activity_filtered$julian_day)
@@ -366,33 +344,8 @@ ggplot(bat_activity_filtered, aes(x = site_abbr, y = Activity_Minutes, color= si
         legend.title = element_text(size = 11),  
         legend.text = element_text(size = 11),   
         axis.text = element_text(size = 10) )+
-  guides(color = "none")  # entfernt die Legende (optional)
+  guides(color = "none") 
 
-# Faktor-Reihenfolge manuell setzen
-bat_activity_filtered$landuse <- factor(
-  bat_activity_filtered$landuse,
-  levels = c(
-    "Intensively used grassland + drained peatland",
-    "PV on rewetted peatland",
-    "PV on mineral soil"
-  )
-)
-
-# Boxplot showing Bat activity per day per Land use
-bat_activity_filtered$days_total <- as.numeric(bat_activity_filtered$days_total)
-ggplot(bat_activity_filtered, aes(x = landuse, y = Activity_Minutes, color = landuse)) +
-  geom_boxplot() +
-  scale_color_manual(values = c(
-    "PV on rewetted peatland" = "steelblue",
-    "Intensively used grassland + drained peatland" = "tomato",
-    "PV on mineral soil"= "darkgreen"
-  )) +
-  xlab("Land use") +
-  ylab("Recorded bat activity minutes per night") +
-  theme_minimal() +
-  theme(
-    legend.position = "none"
-  )
 bat_activity_filtered %>%
   group_by(site_abbr) %>%
   summarise(
@@ -404,6 +357,14 @@ bat_activity_filtered %>%
     max = max(Activity_Minutes, na.rm = TRUE)
   )
 
+bat_activity_filtered$landuse <- factor(
+  bat_activity_filtered$landuse,
+  levels = c(
+    "Intensively used grassland + drained peatland",
+    "PV on rewetted peatland",
+    "PV on mineral soil"
+  )
+)
 
 #Calculating the number of recorded days and the number of recorded minutes (total)
 days_per_site <- bat_activity_filtered %>%
@@ -412,9 +373,8 @@ days_per_site <- bat_activity_filtered %>%
   summarise(unique_days = n_distinct(Date))
 print(days_per_site)
 
-# 144 recordings per night
 days_per_site <- days_per_site %>%
-  mutate(total_minutes_possible = unique_days * 144)
+  mutate(total_minutes_possible = unique_days * 144) # 144 recordings per night
 print(days_per_site)
 total_minutes_per_landuse <- days_per_site %>%
   mutate(
@@ -463,6 +423,7 @@ missing_data_final_2025$site_abbr <- factor(
   )
 )
 
+# Calculating missing days per site
 missing_days_per_site <- missing_data_final_2025 %>%
   mutate(Date = as.Date(Date)) %>%            
   group_by(site_abbr) %>%
@@ -476,7 +437,7 @@ days_inclusive <- as.integer(end - start) + 1
 days_inclusive
 # Result: 86
 
-#Table - summary
+# Table:  calculated monthly recorded bat activity per recorder ID
 bat_summary_aggregated <- bat_activity_filtered %>%
   group_by(landuse, site_abbr) %>%
   summarise(
@@ -493,26 +454,11 @@ bat_summary_aggregated <- bat_activity_filtered %>%
     values_fill = NA # fill missing combinations with NA
   ) 
 
-bat_table <- bat_summary_aggregated %>%
-  gt() %>%
-  fmt_number(columns = where(is.numeric), decimals = 1) %>%
-  cols_label(
-    landuse = "Land use",
-  ) %>%
-  tab_header(title = "Standardized bat activity per month by site")
-
-gtsave(
-  data = bat_table,
-  filename = "C:/Users/Willkommen/Documents/Uni_Greifswald/Masterarbeit/bat_activity_minutes_table_2025.html"
-)
-
-
 # Without IG-D23 & IG-D25
 bat_activity_filtered2 <- bat_activity_filtered %>%
   filter(!site_abbr %in% c("IG-D23", "IG-D25"))
 
 
-# Faktor-Reihenfolge manuell setzen
 bat_activity_filtered2$landuse <- factor(
   bat_activity_filtered2$landuse,
   levels = c(
@@ -522,41 +468,23 @@ bat_activity_filtered2$landuse <- factor(
   )
 )
 
-# Boxplot showing Bat activity per day per Land use
-bat_activity_filtered2$days_total <- as.numeric(bat_activity_filtered2$days_total)
-ggplot(bat_activity_filtered2, aes(x = landuse, y = Activity_Minutes, color = landuse)) +
-  geom_boxplot() +
-  scale_color_manual(values = c(
-    "PV on rewetted peatland" = "steelblue",
-    "Intensively used grassland + drained peatland" = "tomato",
-    "PV on mineral soil"= "darkgreen"
-  )) +
-  xlab("Land use") +
-  ylab("Recorded bat activity minutes per night") +
-  theme_minimal() +
-  theme(
-    legend.position = "none"
-  )
-
-
-#write_xlsx(bat_activity_filtered, path = "~/Uni_Greifswald/Masterarbeit/bat_activity_filtered_2025.xlsx")
-#Standardizing the number of bat activity minutes (6,6 and 4 recorders in the different types of land use)
-# Standardisierung pro Landnutzung
+# write_xlsx(bat_activity_filtered, path = "~/bat_activity_filtered_2025.xlsx")
+# Standardizing the number of bat activity minutes (6,6 and 4 recorders in the different types of land use)
 
 bat_activity_filtered_2 <- bat_activity_filtered2 %>%
   group_by(Date, landuse) %>%
   summarise(
     total_activity = sum(Activity_Minutes),
-    recorder_count = n(),  # Anzahl der vorhandenen Messpunkte (Recorder)
+    recorder_count = n(),  # number of recorders
     .groups = "drop"
   ) %>%
   mutate(
     Activity_Minutes_standardized_landuse = total_activity / recorder_count
   )
+                
 # Time data
 # standardized per land use 
 
-# Faktor-Reihenfolge manuell setzen
 bat_activity_filtered_2$landuse <- factor(
   bat_activity_filtered_2$landuse,
   levels = c(
@@ -601,77 +529,23 @@ monthly_mean_activity <- bat_activity_filtered_2 %>%
   summarise(Mean_Activity = mean(Activity_Minutes_standardized_landuse, na.rm = TRUE)) %>%
   ungroup()
 
-
-#filtered_data <- bat_activity_filtered_2 %>%
- # filter(landuse == "Intensively used grassland + drained peatland")
-
 # offset adds the known quantity of recorded days to the model, to help normalize
 # the unequal exposure time due to the different number of recording days
 # number of iteration for optimization set to 10000 (instead of 150 or 200)
 # helps when max iterations reached, or model will not converge
-# +(1 | julian_day_factor)
 
-bat_activity_filtered$landuse <- relevel(bat_activity_filtered$landuse, ref = "PV on rewetted peatland")
+# checking correlations
+cor.test(bat_activity_filtered2$julian_day_scaled, bat_activity_filtered2$Temperature_mean_night, method = "pearson")
+cor.test (bat_activity_filtered2$julian_day_scaled, bat_activity_filtered2$Rain_fall_night, method = "pearson")
+cor.test(bat_activity_filtered2$Rain_fall_night, bat_activity_filtered2$Temperature_mean_night, method = "pearson")
 
-##hier g1 und g3 noch drin 
-mod1 <- glmmTMB(Activity_Minutes ~ landuse + Rain_fall_night + Temperature_mean_night +  
-                   + offset(log(days_total)) + (1 | site) + (1 | julian_day_factor) ,
-                data = bat_activity_filtered,
-                family = nbinom2(),
-                dispformula = ~1,
-                control = glmmTMBControl(optCtrl = list(iter.max=10000)))
-
-summary(mod1)
-
-check_overdispersion(mod1)
-check_autocorrelation(mod1)
-check_residuals(mod1)
-check_model(mod1)
-
-#ohne rainfall
-mod1_2 <- glmmTMB(Activity_Minutes ~ landuse + Temperature_mean_night +  
-                  julian_day_scaled + offset(log(days_total)) + (1 | site) + (1 | julian_day_factor) ,
-                data = bat_activity_filtered,
-                family = nbinom2(),
-                dispformula = ~1,
-                control = glmmTMBControl(optCtrl = list(iter.max=10000)))
-
-summary(mod1_2)
-check_overdispersion(mod1_2)
-check_autocorrelation(mod1_2)
-check_residuals(mod1_2)
-check_model(mod1_2)
-
-
-# Mod2_1-> without g1 and g3
-# Sicherstellen, dass landuse ein Faktor ist und das gewünschte Referenzlevel setzen
 bat_activity_filtered2$landuse <- factor(
   bat_activity_filtered2$landuse,
   levels = c("PV on rewetted peatland", "Intensively used grassland + drained peatland", "PV on mineral soil")
 )
 
-mod2_1 <- glmmTMB(
-  Activity_Minutes ~ landuse + Rain_fall_night + Temperature_mean_night +  
-    julian_day_scaled + offset(log(days_total)) + 
-    (1 | site) + (1 | julian_day_factor) ,
-  data = bat_activity_filtered2,
-  family = nbinom2(),
-  dispformula = ~1,
-  control = glmmTMBControl(optCtrl = list(iter.max = 10000))
-)
-
-summary(mod2_1)
-check_overdispersion(mod2_1)
-check_autocorrelation(mod2_1)
-check_residuals(mod2_1)
-check_model(mod2_1)
-
-
-
-#ohne julian date als fixed effect
-cor.test(bat_activity_filtered2$julian_day_scaled, bat_activity_filtered2$Temperature_mean_night, method = "pearson")
-cor.test (bat_activity_filtered2$julian_day_scaled, bat_activity_filtered2$Rain_fall_night, method = "pearson")
-cor.test(bat_activity_filtered2$Rain_fall_night, bat_activity_filtered2$Temperature_mean_night, method = "pearson")
+# without IG-D23 and IG-D25
+# without julian date as fixed effect
 
 mod2_3<- glmmTMB(
   Activity_Minutes ~ landuse + Rain_fall_night + Temperature_mean_night +  
@@ -690,65 +564,9 @@ check_residuals(mod2_3)
 check_model(mod2_3)
 
 
-
-mod2_4<- glmmTMB(
-  Activity_Minutes ~ landuse + Temperature_mean_night +  
-    offset(log(days_total)) +
-    (1 | site) +  (1 | julian_day_factor) ,
-  data = bat_activity_filtered2,
-  family = nbinom2(),
-  dispformula = ~1,
-  control = glmmTMBControl(optCtrl = list(iter.max = 10000))
-)
-
-summary(mod2_4)
-check_overdispersion(mod2_4)
-check_autocorrelation(mod2_4)
-check_residuals(mod2_4)
-check_model(mod2_4)
-
-library(performance)
 icc(mod2_3)
-icc(mod2_4)
-#Der ICC bestätigt, dass deine Random Effects (Standort + Tag im Jahr) einen sinnvollen Beitrag zur Modellstruktur leisten.
-ranef(mod2_3)
-library(sjPlot)
-#install.packages("sjPlot")
-plot_model(mod2_3, type = "re")  # Visualisiert Random Effects
 
-
-mod_full<- glmmTMB(
-  Activity_Minutes ~ landuse + Rain_fall_night + Temperature_mean_night +  
-    offset(log(days_total)) +
-    (1 | site) +  (1 | julian_day_factor) ,
-  data = bat_activity_filtered2,
-  family = nbinom2(),
-  dispformula = ~1,
-  control = glmmTMBControl(optCtrl = list(iter.max = 10000))
-)
-summary (mod_full)
-check_overdispersion(mod_full)
-check_autocorrelation(mod_full)
-check_residuals(mod_full)
-check_model(mod_full)
-
-
-mod_reduced<- glmmTMB(
-  Activity_Minutes ~ landuse + Rain_fall_night + Temperature_mean_night +  
-    offset(log(days_total)),
-  data = bat_activity_filtered2,
-  family = nbinom2(),
-  dispformula = ~1,
-  control = glmmTMBControl(optCtrl = list(iter.max = 10000))
-)
-summary (mod_reduced)
-check_overdispersion(mod_reduced)
-check_autocorrelation(mod_reduced)
-check_residuals(mod_reduced)
-check_model(mod_reduced)
-anova(mod_full, mod_reduced)
-
-# Modell mit und ohne 'site'
+# with and without 'site' as a random effect
 mod_full <- glmmTMB(Activity_Minutes ~ landuse + Rain_fall_night + Temperature_mean_night + offset(log(days_total)) + (1 | site) + (1 | julian_day_factor),
                     data = bat_activity_filtered2,
                     family = nbinom2())
@@ -757,12 +575,12 @@ mod_no_site <- update(mod_full, . ~ . - (1 | site))
 
 anova(mod_no_site, mod_full)
 
-# Analog für 'julian_day_factor':
+# with and without 'julian_day_factor' as a random effect
 mod_no_julian <- update(mod_full, . ~ . - (1 | julian_day_factor))
 
 anova(mod_no_julian, mod_full)
 
-
+############
 # 1. Temperature effect
 temp_effect <- ggpredict(mod2_3, terms = "Temperature_mean_night [all]", condition = c(days_total = 1))
 p_temp <- ggplot(temp_effect, aes(x = x, y = predicted)) +
@@ -776,7 +594,7 @@ p_temp <- ggplot(temp_effect, aes(x = x, y = predicted)) +
     axis.text = element_text(size = 10)
   )
 
-# 2. precipitation effect
+# 2. Precipitation effect
 rain_effect <- ggpredict(mod2_3, terms = "Rain_fall_night [all]", condition = c(days_total = 1))
 p_rain <- ggplot(rain_effect, aes(x = x, y = predicted)) +
   geom_line(color = "skyblue", size = 1) +
@@ -789,7 +607,7 @@ p_rain <- ggplot(rain_effect, aes(x = x, y = predicted)) +
     axis.text = element_text(size = 10)
   )
 
-# 3. Landuse 
+# 3. Landuse effect
 landuse_effect <- ggpredict(mod2_3, terms = "landuse [all]", condition = c(days_total = 1))
 landuse_effect$x <- factor(landuse_effect$x, levels = c(
   "Intensively used grassland + drained peatland",
@@ -807,16 +625,16 @@ p_landuse <- ggplot(landuse_effect, aes(x = x, y = predicted)) +
     axis.text = element_text(size = 10)
   )
 
+# label for y-axis
 y_label <- ggplot() + 
   theme_void() +
   annotate("text", x = 0, y = 0.5, 
            label = "Predicted bat activity minutes per night", 
            angle = 90, size = 4.3)
 
-
+# all together
 plots <- list(p_landuse,p_temp, p_rain)
 
 combined_plot <- y_label + wrap_plots(plots, ncol = 1) + 
   plot_layout(widths = c(0.05, 0.95))  
 combined_plot
-# wahrnmeldung der plots checken und reihenfolge !!!
