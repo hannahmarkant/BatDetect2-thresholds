@@ -91,7 +91,7 @@ ano_lu <- anosim(comm, pivot_tab2$month, distance="bray", permutations=9999)
 print(ano_lu)
 
 # adding weather data
-weather_night_2024 <- read_excel("Uni_Greifswald/Masterarbeit/weather_night_2024.xlsx")
+weather_night_2024 <- read_excel("~/weather_night_2024.xlsx")
 head(weather_night_2024)
 
 weather_month <- weather_night_2024 %>%
@@ -268,3 +268,4 @@ NMDS_plot_combined <- ggplot(nmds.sites, aes(NMDS1, NMDS2)) +
     axis.title = element_text(size = 11),   
     axis.text = element_text(size = 10))
 print(NMDS_plot_combined)
+
