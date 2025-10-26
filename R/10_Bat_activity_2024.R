@@ -430,15 +430,6 @@ monthly_mean_activity <- bat_activity_filtered_2 %>%
   summarise(Mean_Activity = mean(Activity_Minutes_standardized_landuse, na.rm = TRUE)) %>%
   ungroup()
 
-all_dates <- seq(as.Date("2024-03-13"), as.Date("2024-11-09"), by = "day")
-
-missing_dates <- setdiff(all_dates, bat_activity_filtered_2$Date)
-
-# missing dates
-missing_dates
-missing_dates <- as.Date(missing_dates, origin = "1970-01-01")
-missing_dates
-
 # offset adds the known quantity of recorded days to the model, to help normalize
 # the unequal exposure time due to the different number of recording days
 # number of iteration for optimization set to 10000 (instead of 150 or 200)
@@ -540,3 +531,4 @@ combined_plot <- y_label + wrap_plots(plots, ncol = 1) +
   plot_layout(widths = c(0.05, 0.95))
 
 combined_plot
+
