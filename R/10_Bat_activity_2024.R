@@ -101,7 +101,7 @@ final_data <- final_data %>%
   ) %>%
   dplyr::select(-missing_flag)
 
-# Calculate number of unique recording days per plot
+# Calculate number of unique recording days per recorder
 # Days with recording issues are excluded
 record_days <- final_data %>%
   anti_join(missing_data_final_2024, by = c("site", "Date")) %>%
@@ -541,5 +541,6 @@ combined_plot <- y_label + wrap_plots(plots, ncol = 1) +
   plot_layout(widths = c(0.05, 0.95))
 
 combined_plot
+
 
 
