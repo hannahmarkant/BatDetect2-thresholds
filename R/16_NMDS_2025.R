@@ -22,7 +22,7 @@ library(lubridate)
 
 # loading data
 setwd("./")
-audio_data_2025_filtered <- read_csv("~/Uni_Greifswald/Masterarbeit/audio_data_2025_filtered.csv")
+audio_data_2025_filtered <- read_csv("~/audio_data_2025_filtered.csv")
 head(audio_data_2025_filtered)
 
 # filtering recorders (IG-D23 and IG-D25) which are not going to be included
@@ -277,3 +277,4 @@ NMDS_plot_combined <- ggplot(nmds.sites, aes(NMDS1, NMDS2)) +
     axis.title = element_text(size = 11),   
     axis.text = element_text(size = 10))
 print(NMDS_plot_combined)
+
