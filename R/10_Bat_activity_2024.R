@@ -262,8 +262,7 @@ bat_activity_filtered <- bat_activity_filtered %>%
 #Julian date
 bat_activity_filtered$julian_day <- as.numeric(format(bat_activity_filtered$Date, "%j"))
 
-# Scaling Julian Day for improved model convergence
-bat_activity_filtered$julian_day_scaled <- scale(bat_activity_filtered$julian_day)
+# Julian Day as factor
 bat_activity_filtered$julian_day_factor <- as.factor(bat_activity_filtered$julian_day)
 
 # Adding total number of days per site to each day in bat_activity_filtered
@@ -531,4 +530,5 @@ combined_plot <- y_label + wrap_plots(plots, ncol = 1) +
   plot_layout(widths = c(0.05, 0.95))
 
 combined_plot
+
 
