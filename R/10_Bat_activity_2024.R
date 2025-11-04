@@ -357,7 +357,6 @@ days_inclusive <- as.integer(end - start) + 1
 days_inclusive
 # Result: 239
 
-
 #Table: calculated monthly recorded bat activity per recorder ID
 bat_summary_aggregated <- bat_activity_filtered %>%
   group_by(landuse, site_abbr) %>%
@@ -436,13 +435,17 @@ monthly_mean_activity <- bat_activity_filtered_2 %>%
 
 bat_activity_filtered$landuse <- relevel(bat_activity_filtered$landuse, ref = "PV on rewetted peatland")
 
+bat_activity_filtered$Rain_fall_night_scaled <- scale(bat_activity_filtered$Rain_fall_night)
+bat_activity_filtered$Temperature_mean_night_scaled <- scale(bat_activity_filtered$Temperature_mean_night)
+bat_activity_filtered$julian_day_scaled <- scale(bat_activity_filtered$julian_day)
+
 # checking correlation
-cor.test(bat_activity_filtered$julian_day_scaled, bat_activity_filtered$Temperature_mean_night, method = "pearson")
-cor.test (bat_activity_filtered$julian_day_scaled, bat_activity_filtered$Rain_fall_night, method = "pearson")
-cor.test(bat_activity_filtered$Rain_fall_night, bat_activity_filtered$Temperature_mean_night, method = "pearson")
+cor.test(bat_activity_filtered$julian_day_scaled, bat_activity_filtered$Temperature_mean_night_scaled, method = "pearson")
+cor.test (bat_activity_filtered$julian_day_scaled, bat_activity_filtered$Rain_fall_night_scaled, method = "pearson")
+cor.test(bat_activity_filtered$Rain_fall_night_scaled, bat_activity_filtered$Temperature_mean_night_scaled, method = "pearson")
 
 # without julian day as fixed effect
-mod1_2 <- glmmTMB(Activity_Minutes ~ landuse + Rain_fall_night+ Temperature_mean_night 
+mod1_2 <- glmmTMB(Activity_Minutes ~ landuse + Rain_fall_night_scaled + Temperature_mean_night_scaled 
                 + offset(log(days_total)) + (1 | site)+ (1 | julian_day_factor),
                 data = bat_activity_filtered,
                 family = nbinom2(),
@@ -458,7 +461,7 @@ check_model(mod1_2)
 icc(mod1_2)
 
 # with and without 'site' as a random effect
-mod_full <- glmmTMB(Activity_Minutes ~ landuse + Rain_fall_night + Temperature_mean_night + offset(log(days_total)) + (1 | site) + (1 | julian_day_factor),
+mod_full <- glmmTMB(Activity_Minutes ~ landuse + Rain_fall_night_scaled + Temperature_mean_night_scaled + offset(log(days_total)) + (1 | site) + (1 | julian_day_factor),
                     data = bat_activity_filtered,
                     family = nbinom2())
 
@@ -530,6 +533,7 @@ combined_plot <- y_label + wrap_plots(plots, ncol = 1) +
   plot_layout(widths = c(0.05, 0.95))
 
 combined_plot
+
 
 
 
