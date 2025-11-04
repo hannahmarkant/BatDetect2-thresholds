@@ -203,6 +203,12 @@ ggplot(weather_night_filtered, aes(x = date, y = Temperature_mean_night)) +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
+# changing the time window to 12.03-22.10.2024 because recordings stopped latest at the 22.10.2024
+weather_night_filtered <- weather_night_filtered[
+  weather_night_filtered$date >= as.Date("2024-03-12") &
+    weather_night_filtered$date <= as.Date("2024-10-22"), 
+]
+                
 # Plotting temperature and precipitation
 ggplot(weather_night_filtered, aes(x = date)) +
   geom_col(aes(y = Rain_fall_night), fill = "steelblue") +
@@ -532,4 +538,5 @@ combined_plot <- y_label + wrap_plots(plots, ncol = 1) +
   plot_layout(widths = c(0.05, 0.95))
 
 combined_plot
+
 
