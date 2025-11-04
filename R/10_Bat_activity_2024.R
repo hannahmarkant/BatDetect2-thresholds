@@ -19,7 +19,6 @@ library(patchwork)
 library(glmmTMB)
 library(performance)
 library(ggeffects)
-library(gt)
 
 # Setting the working directory
 setwd("./")
@@ -533,3 +532,4 @@ combined_plot <- y_label + wrap_plots(plots, ncol = 1) +
   plot_layout(widths = c(0.05, 0.95))
 
 combined_plot
+
