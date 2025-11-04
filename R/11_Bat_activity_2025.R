@@ -183,7 +183,6 @@ weather_night_monthly_2025 <- weather_filled %>%
     Total_night_rainfall = sum(`Rain fall_final`, na.rm = TRUE),
     Mean_night_temperature = mean(Temperature_final, na.rm = TRUE)
   )
-
 # write_xlsx(weather_night_filtered, "~/weather_night_2025.xlsx")
 
 # Plotting precipitation                
@@ -428,7 +427,7 @@ days_inclusive <- as.integer(end - start) + 1
 days_inclusive
 # Result: 86
 
-# Table:  calculated monthly recorded bat activity per recorder ID
+# Table: calculated monthly recorded bat activity per recorder ID
 bat_summary_aggregated <- bat_activity_filtered %>%
   group_by(landuse, site_abbr) %>%
   summarise(
@@ -457,7 +456,6 @@ bat_activity_filtered2$landuse <- factor(
     "PV on mineral soil"
   )
 )
-
 # write_xlsx(bat_activity_filtered, path = "~/bat_activity_filtered_2025.xlsx")
 
 # Standardizing the number of bat activity minutes (6,6 and 4 recorders in the different types of land use)
@@ -518,10 +516,15 @@ monthly_mean_activity <- bat_activity_filtered_2 %>%
   summarise(Mean_Activity = mean(Activity_Minutes_standardized_landuse, na.rm = TRUE)) %>%
   ungroup()
 
+# Scale
+bat_activity_filtered2$Rain_fall_night_scaled <- scale(bat_activity_filtered2$Rain_fall_night)
+bat_activity_filtered2$Temperature_mean_night_scaled <- scale(bat_activity_filtered2$Temperature_mean_night)
+bat_activity_filtered2$julian_day_scaled <- scale(bat_activity_filtered2$julian_day)                
+                
 # checking correlations
-cor.test(bat_activity_filtered2$julian_day_scaled, bat_activity_filtered2$Temperature_mean_night, method = "pearson")
-cor.test (bat_activity_filtered2$julian_day_scaled, bat_activity_filtered2$Rain_fall_night, method = "pearson")
-cor.test(bat_activity_filtered2$Rain_fall_night, bat_activity_filtered2$Temperature_mean_night, method = "pearson")
+cor.test(bat_activity_filtered2$julian_day_scaled, bat_activity_filtered2$Temperature_mean_night_scaled, method = "pearson")
+cor.test (bat_activity_filtered2$julian_day_scaled, bat_activity_filtered2$Rain_fall_night_scaled, method = "pearson")
+cor.test(bat_activity_filtered2$Rain_fall_night_scaled, bat_activity_filtered2$Temperature_mean_night_scaled, method = "pearson")
 
 bat_activity_filtered2$landuse <- factor(
   bat_activity_filtered2$landuse,
@@ -532,7 +535,7 @@ bat_activity_filtered2$landuse <- factor(
 # without julian date as fixed effect
 
 mod2_3<- glmmTMB(
-  Activity_Minutes ~ landuse + Rain_fall_night + Temperature_mean_night +  
+  Activity_Minutes ~ landuse + Rain_fall_night_scaled+ Temperature_mean_night_scaled +  
     offset(log(days_total)) +
     (1 | site) +  (1 | julian_day_factor) ,
   data = bat_activity_filtered2,
@@ -546,8 +549,6 @@ check_overdispersion(mod2_3)
 check_autocorrelation(mod2_3)
 check_residuals(mod2_3)
 check_model(mod2_3)
-
-
 icc(mod2_3)
 
 # with and without 'site' as a random effect
@@ -566,11 +567,11 @@ anova(mod_no_julian, mod_full)
 
 ############
 # 1. Temperature effect
-temp_effect <- ggpredict(mod2_3, terms = "Temperature_mean_night [all]", condition = c(days_total = 1))
+temp_effect <- ggpredict(mod2_3, terms = "Temperature_mean_night_scaled [all]", condition = c(days_total = 1))
 p_temp <- ggplot(temp_effect, aes(x = x, y = predicted)) +
   geom_line(color = "#D55E00", size = 1) +
   geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) +
-  labs(x = "Mean night temperature (°C)", y= NULL) +
+  labs(x = "Mean night temperature (scaled)", y= NULL) +
   theme_minimal()+
   theme(
     text = element_text(size = 11),
@@ -579,11 +580,11 @@ p_temp <- ggplot(temp_effect, aes(x = x, y = predicted)) +
   )
 
 # 2. Precipitation effect
-rain_effect <- ggpredict(mod2_3, terms = "Rain_fall_night [all]", condition = c(days_total = 1))
+rain_effect <- ggpredict(mod2_3, terms = "Rain_fall_night_scaled [all]", condition = c(days_total = 1))
 p_rain <- ggplot(rain_effect, aes(x = x, y = predicted)) +
   geom_line(color = "skyblue", size = 1) +
   geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) +
-  labs(x = "Total night precipitation (mm)", y= NULL) +
+  labs(x = "Total night precipitation (scaled)", y= NULL) +
   theme_minimal()+
   theme(
     text = element_text(size = 11),
@@ -622,7 +623,3 @@ plots <- list(p_landuse,p_temp, p_rain)
 combined_plot <- y_label + wrap_plots(plots, ncol = 1) + 
   plot_layout(widths = c(0.05, 0.95))  
 combined_plot
-
-
-
-
