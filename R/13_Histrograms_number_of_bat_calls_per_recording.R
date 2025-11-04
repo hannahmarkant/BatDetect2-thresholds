@@ -1,6 +1,6 @@
 ###################################################################################################################
 # The detected calls by BatDetect2 from the data sets (2024 and 2025) were visualized as histograms showing the 
-# number of calls per recorded minute. The recorders IG-D23 and IG-D25 were excluded from the 2025 dataset.
+# number of calls per recorded minute. The recorders IG-D23 and IG-D25 were excluded from the 2025 data set.
 ####################################################################################################################
 
 library(dplyr)
@@ -126,17 +126,6 @@ table_for_plot_2025 <- calls_per_recording %>%
   ) %>%
   arrange(landuse, n_calls)
 
-# Number of recordings that contained more than 60 calls
-recordings_over_60 <- calls_per_recording %>%
-  filter(n_calls > 60, !(year == 2025 & site %in% c("g1", "g3"))) %>%
-  group_by(year, landuse) %>%
-  summarise(
-    recordings_over_60_calls = n(),
-    .groups = "drop"
-  ) %>%
-  arrange(year, landuse)
-recordings_over_60
-
 # Number of total recorded minutes per year and land use
 recorded_minutes_summary <- calls_per_recording %>%
   filter(!(year == 2025 & site %in% c("g1", "g3"))) %>%
@@ -147,3 +136,16 @@ recorded_minutes_summary <- calls_per_recording %>%
   ) %>%
   arrange(year, landuse)
 recorded_minutes_summary
+
+# Calculation of the percentage of recordings exceeding the defined threshold of 20 calls
+activity_summary <- calls_per_recording %>%
+  filter(!(year == 2025 & site %in% c("g1", "g3"))) %>%  
+  group_by(year, landuse) %>%
+  summarise(
+    total_recordings = n(),
+    over_20 = sum(n_calls > 20),
+    perc_over_20 = round(100 * over_20 / total_recordings, 2),
+    .groups = "drop"
+  )
+activity_summary
+
