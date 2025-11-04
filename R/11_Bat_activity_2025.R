@@ -122,7 +122,7 @@ Lottorf_Weather_2025 <- read_excel("~/Lottorf_Wetterdaten_April-Juli_2025.xlsx")
 data_OBS_DEU_PT1H_T2M_4466 <- read_csv("~/Deutscher Wetterdienst/data_OBS_DEU_PT1H_T2M_4466.csv")
 head(data_OBS_DEU_PT1H_T2M_4466)
 
-#hourly precipitation Schleswig
+# hourly precipitation Schleswig
 data_OBS_DEU_PT1H_RR_4466 <- read_csv("~/Deutscher Wetterdienst/data_OBS_DEU_PT1H_RR_4466.csv")
 head(data_OBS_DEU_PT1H_RR_4466)
 Sys.setlocale("LC_TIME", "C")
@@ -281,10 +281,10 @@ bat_activity_filtered <- bat_activity_filtered %>%
 bat_activity_filtered <- bat_activity_filtered %>%
  filter(Date >= as.Date("2025-04-24"))
 
-#Julian day
+# Julian day
 bat_activity_filtered$julian_day <- as.numeric(format(bat_activity_filtered$Date, "%j"))
 
-# Julian Day as factor
+# Julian day as factor
 bat_activity_filtered$julian_day_factor <- as.factor(bat_activity_filtered$julian_day)
 
 # Adding total number of days per site to each day in bat_activity_filtered
@@ -358,7 +358,7 @@ bat_activity_filtered$landuse <- factor(
   )
 )
 
-#Calculating the number of recorded days and the number of recorded minutes (total)
+# Calculating the number of recorded days and the number of recorded minutes (total)
 days_per_site <- bat_activity_filtered %>%
   mutate(Date = as.Date(Date)) %>%            
   group_by(site_abbr) %>%
@@ -405,7 +405,6 @@ missing_data_final_2025 <- missing_data_final_2025 %>%
     TRUE ~ NA_character_
   ))
 
-
 missing_data_final_2025$site_abbr <- factor(
   missing_data_final_2025$site_abbr,
   levels = c(
@@ -450,7 +449,6 @@ bat_summary_aggregated <- bat_activity_filtered %>%
 bat_activity_filtered2 <- bat_activity_filtered %>%
   filter(!site_abbr %in% c("IG-D23", "IG-D25"))
 
-
 bat_activity_filtered2$landuse <- factor(
   bat_activity_filtered2$landuse,
   levels = c(
@@ -461,8 +459,8 @@ bat_activity_filtered2$landuse <- factor(
 )
 
 # write_xlsx(bat_activity_filtered, path = "~/bat_activity_filtered_2025.xlsx")
-# Standardizing the number of bat activity minutes (6,6 and 4 recorders in the different types of land use)
 
+# Standardizing the number of bat activity minutes (6,6 and 4 recorders in the different types of land use)
 bat_activity_filtered_2 <- bat_activity_filtered2 %>%
   group_by(Date, landuse) %>%
   summarise(
@@ -476,7 +474,6 @@ bat_activity_filtered_2 <- bat_activity_filtered2 %>%
                 
 # Time data
 # standardized per land use 
-
 bat_activity_filtered_2$landuse <- factor(
   bat_activity_filtered_2$landuse,
   levels = c(
@@ -520,11 +517,6 @@ monthly_mean_activity <- bat_activity_filtered_2 %>%
   group_by(landuse, Month) %>%
   summarise(Mean_Activity = mean(Activity_Minutes_standardized_landuse, na.rm = TRUE)) %>%
   ungroup()
-
-# offset adds the known quantity of recorded days to the model, to help normalize
-# the unequal exposure time due to the different number of recording days
-# number of iteration for optimization set to 10000 (instead of 150 or 200)
-# helps when max iterations reached, or model will not converge
 
 # checking correlations
 cor.test(bat_activity_filtered2$julian_day_scaled, bat_activity_filtered2$Temperature_mean_night, method = "pearson")
@@ -630,6 +622,7 @@ plots <- list(p_landuse,p_temp, p_rain)
 combined_plot <- y_label + wrap_plots(plots, ncol = 1) + 
   plot_layout(widths = c(0.05, 0.95))  
 combined_plot
+
 
 
 
