@@ -8,23 +8,18 @@
 #################################################################################
 
 library(readxl)
+library(readr)
 library(openxlsx)
+library(writexl)
 library(dplyr)
 library(tidyr)
-library(readr)
 library(lubridate)
 library(ggplot2)
+library(patchwork)
 library(glmmTMB)
 library(performance)
 library(ggeffects)
-library(broom.mixed)
-library(gt)
-library(knitr)
-library(kableExtra)
-library(patchwork)
 library(stringr)
-library(DHARMa)
-library(writexl)
 
 # Setting the working directory
 setwd("./")
@@ -113,7 +108,6 @@ final_data <- final_data %>%
     Activity_Minutes = ifelse(!is.na(missing_flag) & missing_flag, NA, Activity_Minutes)
     ) %>%
   dplyr::select(-missing_flag)
-
 
 # Calculate number of unique recording days per recorder
 # Days with recording issues are excluded
@@ -636,5 +630,6 @@ plots <- list(p_landuse,p_temp, p_rain)
 combined_plot <- y_label + wrap_plots(plots, ncol = 1) + 
   plot_layout(widths = c(0.05, 0.95))  
 combined_plot
+
 
 
