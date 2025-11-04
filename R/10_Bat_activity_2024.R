@@ -259,10 +259,10 @@ bat_activity_filtered <- bat_activity_filtered %>%
     TRUE ~ NA_character_
   ))
 
-#Julian date
+#Julian day
 bat_activity_filtered$julian_day <- as.numeric(format(bat_activity_filtered$Date, "%j"))
 
-# Julian Day as factor
+# Julian day as factor
 bat_activity_filtered$julian_day_factor <- as.factor(bat_activity_filtered$julian_day)
 
 # Adding total number of days per site to each day in bat_activity_filtered
@@ -530,5 +530,6 @@ combined_plot <- y_label + wrap_plots(plots, ncol = 1) +
   plot_layout(widths = c(0.05, 0.95))
 
 combined_plot
+
 
 
