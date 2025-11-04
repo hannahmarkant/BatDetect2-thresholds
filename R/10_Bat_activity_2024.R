@@ -433,13 +433,9 @@ monthly_mean_activity <- bat_activity_filtered_2 %>%
   summarise(Mean_Activity = mean(Activity_Minutes_standardized_landuse, na.rm = TRUE)) %>%
   ungroup()
 
-# offset adds the known quantity of recorded days to the model, to help normalize
-# the unequal exposure time due to the different number of recording days
-# number of iteration for optimization set to 10000 (instead of 150 or 200)
-# helps when max iterations reached, or model will not converge
-
 bat_activity_filtered$landuse <- relevel(bat_activity_filtered$landuse, ref = "PV on rewetted peatland")
 
+# Scale
 bat_activity_filtered$Rain_fall_night_scaled <- scale(bat_activity_filtered$Rain_fall_night)
 bat_activity_filtered$Temperature_mean_night_scaled <- scale(bat_activity_filtered$Temperature_mean_night)
 bat_activity_filtered$julian_day_scaled <- scale(bat_activity_filtered$julian_day)
@@ -538,5 +534,6 @@ combined_plot <- y_label + wrap_plots(plots, ncol = 1) +
   plot_layout(widths = c(0.05, 0.95))
 
 combined_plot
+
 
 
