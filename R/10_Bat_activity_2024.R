@@ -477,11 +477,11 @@ anova(mod_no_julian, mod_full)
 
 ###########
 # 1. Temperature effect
-temp_effect <- ggpredict(mod1_2, terms = "Temperature_mean_night [all]", condition = c(days_total = 1))
+temp_effect <- ggpredict(mod1_2, terms = "Temperature_mean_night_scaled [all]", condition = c(days_total = 1))
 p_temp <- ggplot(temp_effect, aes(x = x, y = predicted)) +
   geom_line(color = "#D55E00", size = 1) +
   geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) +
-  labs(x = "Mean nighttime temperature (°C)", y= NULL) +
+  labs(x = "Mean nighttime temperature (scaled)", y= NULL) +
   theme_minimal()+
   theme(
     text = element_text(size = 11),
@@ -490,11 +490,11 @@ p_temp <- ggplot(temp_effect, aes(x = x, y = predicted)) +
   )
 
 # 2. Precipitation effect
-rain_effect <- ggpredict(mod1_2, terms = "Rain_fall_night [all]", condition = c(days_total = 1))
+rain_effect <- ggpredict(mod1_2, terms = "Rain_fall_night_scaled [all]", condition = c(days_total = 1))
 p_rain <- ggplot(rain_effect, aes(x = x, y = predicted)) +
   geom_line(color = "skyblue", size = 1) +
   geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) +
-  labs(x = "Total nighttime precipitation (mm)", y= NULL) +
+  labs(x = "Total nighttime precipitation (scaled)", y= NULL) +
   theme_minimal()+
   theme(
     text = element_text(size = 11),
@@ -533,7 +533,3 @@ combined_plot <- y_label + wrap_plots(plots, ncol = 1) +
   plot_layout(widths = c(0.05, 0.95))
 
 combined_plot
-
-
-
-
