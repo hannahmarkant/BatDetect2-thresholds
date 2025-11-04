@@ -9,7 +9,6 @@ library(dplyr)
 library(ggplot2)
 library(readxl)
 library(tidyr)
-library(readxl)
 
 Sys.setlocale("LC_TIME", "C")
 
@@ -243,3 +242,4 @@ ggplot(bat_weather_filtered, aes(x = dummy_date)) +
     legend.title = element_text(size = 11, face = "bold"),
     legend.text = element_text(size = 11, margin = margin(l = 5, r = 10))
   )
+
