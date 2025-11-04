@@ -16,7 +16,6 @@ library(labdsv)
 library(vegan)
 library(ggplot2)
 library(ggrepel)
-library(indicspecies)
 library(grid)
 library(lubridate)
 
@@ -268,4 +267,5 @@ NMDS_plot_combined <- ggplot(nmds.sites, aes(NMDS1, NMDS2)) +
     axis.title = element_text(size = 11),   
     axis.text = element_text(size = 10))
 print(NMDS_plot_combined)
+
 
