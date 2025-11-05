@@ -120,7 +120,7 @@ monthly_activity_mean <- bat_activity_daily_corrected %>%
     Month = month(dummy_date, label = TRUE)
   ) %>%
   group_by(Year, Month, landuse) %>%
-  summarise(Total_Activity = mean(Activity_Minutes_standardized_landuse, na.rm = TRUE)) %>%
+  summarise(Mean_Activity = mean(Activity_Minutes_standardized_landuse, na.rm = TRUE)) %>%
   ungroup()
 
 # Loading weather data
@@ -242,4 +242,5 @@ ggplot(bat_weather_filtered, aes(x = dummy_date)) +
     legend.title = element_text(size = 11, face = "bold"),
     legend.text = element_text(size = 11, margin = margin(l = 5, r = 10))
   )
+
 
