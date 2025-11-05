@@ -98,7 +98,7 @@ weather_month <- weather_night_2024 %>%
     mutate(year_month = format(date, "%Y-%m")) %>%
   group_by(year_month) %>%
   summarise(
-    Rain_fall_month = mean(Rain_fall_night, na.rm = TRUE), #sum
+    Rain_fall_month = sum(Rain_fall_night, na.rm = TRUE),
     Temperature_mean_month = mean(Temperature_mean_night, na.rm = TRUE)
   )
 
@@ -267,5 +267,6 @@ NMDS_plot_combined <- ggplot(nmds.sites, aes(NMDS1, NMDS2)) +
     axis.title = element_text(size = 11),   
     axis.text = element_text(size = 10))
 print(NMDS_plot_combined)
+
 
 
