@@ -436,7 +436,7 @@ bat_summary_aggregated <- bat_activity_filtered %>%
     .groups = "drop"
   ) %>%
   mutate(rate_per_month = (total_activity / total_days) * 30) %>% # approx. per month
-  mutate(rate_per_month = round(rate_per_month, 1)) %>%
+  mutate(rate_per_month = round(rate_per_month, 2)) %>%
   dplyr::select(landuse, site_abbr, rate_per_month) %>%
   pivot_wider(
     names_from = site_abbr,
@@ -623,3 +623,4 @@ plots <- list(p_landuse,p_temp, p_rain)
 combined_plot <- y_label + wrap_plots(plots, ncol = 1) + 
   plot_layout(widths = c(0.05, 0.95))  
 combined_plot
+
